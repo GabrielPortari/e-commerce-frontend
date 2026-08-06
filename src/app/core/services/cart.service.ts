@@ -16,18 +16,25 @@ export class CartService {
   private readonly _loading = signal(false);
   readonly loading = this._loading.asReadonly();
 
+  private readonly _error = signal<string | null>(null);
+  readonly error = this._error.asReadonly();
+
   constructor() {
     this.load();
   }
 
   load(): void {
     this._loading.set(true);
+    this._error.set(null);
     this.api.get<Cart>('/cart').subscribe({
       next: (cart) => {
         this._cart.set(cart);
         this._loading.set(false);
       },
-      error: () => this._loading.set(false),
+      error: () => {
+        this._error.set('Não foi possível carregar o carrinho.');
+        this._loading.set(false);
+      },
     });
   }
 

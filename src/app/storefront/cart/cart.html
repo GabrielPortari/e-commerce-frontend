@@ -1,8 +1,14 @@
 <section class="cart">
   <h1>Carrinho</h1>
 
+  @if (actionError()) {
+    <p class="error">{{ actionError() }}</p>
+  }
+
   @if (cartService.loading()) {
     <p>Carregando carrinho...</p>
+  } @else if (cartService.error()) {
+    <p class="error">{{ cartService.error() }}</p>
   } @else if (!cartService.cart() || cartService.cart()!.items.length === 0) {
     <p>Seu carrinho está vazio.</p>
   } @else {
