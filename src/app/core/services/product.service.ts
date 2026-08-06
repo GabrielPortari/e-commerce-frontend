@@ -9,6 +9,19 @@ export interface ProductFilters {
   name?: string;
 }
 
+export interface ProductRequest {
+  name: string;
+  description: string;
+  price: number;
+  stock: number;
+  imageUrl: string | null;
+  categoryId: number;
+}
+
+export interface ImageUploadResponse {
+  imageUrl: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ProductService {
   private readonly api = inject(ApiService);
@@ -17,7 +30,29 @@ export class ProductService {
     return this.api.get<Product[]>('/products', filters);
   }
 
+  getAllAdmin(): Observable<Product[]> {
+    return this.api.get<Product[]>('/admin/products');
+  }
+
   getById(id: number): Observable<Product> {
     return this.api.get<Product>(`/products/${id}`);
+  }
+
+  create(product: ProductRequest): Observable<Product> {
+    return this.api.post<Product>('/products', product);
+  }
+
+  update(id: number, product: ProductRequest): Observable<Product> {
+    return this.api.put<Product>(`/products/${id}`, product);
+  }
+
+  delete(id: number): Observable<void> {
+    return this.api.delete<void>(`/products/${id}`);
+  }
+
+  uploadImage(file: File): Observable<ImageUploadResponse> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.api.post<ImageUploadResponse>('/products/upload-image', formData);
   }
 }

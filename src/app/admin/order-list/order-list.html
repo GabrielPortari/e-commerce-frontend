@@ -1,1 +1,56 @@
-<p>order-list works!</p>
+<section class="order-list">
+  <h1>Pedidos</h1>
+
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+
+  <div class="filters">
+    <label for="status-filter">Status</label>
+    <select id="status-filter" (change)="setStatusFilter($any($event.target).value)">
+      <option value="">Todos</option>
+      @for (status of statuses; track status) {
+        <option [value]="status">{{ status }}</option>
+      }
+    </select>
+  </div>
+
+  @if (loading()) {
+    <p>Carregando pedidos...</p>
+  } @else if (filteredOrders().length === 0) {
+    <p>Nenhum pedido encontrado.</p>
+  } @else {
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Cliente</th>
+          <th>Data</th>
+          <th>Total</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (order of filteredOrders(); track order.id) {
+          <tr>
+            <td>{{ order.id }}</td>
+            <td>{{ order.customerName }} — {{ order.customerEmail }}</td>
+            <td>{{ order.createdAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+            <td>{{ order.total | currency: 'BRL' }}</td>
+            <td>
+              <select
+                [value]="order.status"
+                [disabled]="updatingId() === order.id"
+                (change)="updateStatus(order.id, $any($event.target).value)"
+              >
+                @for (status of statuses; track status) {
+                  <option [value]="status">{{ status }}</option>
+                }
+              </select>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</section>
