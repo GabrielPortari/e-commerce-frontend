@@ -1,1 +1,31 @@
-<p>product-list works!</p>
+<section class="product-list">
+  <div class="filters">
+    <label for="category-filter">Categoria</label>
+    <select id="category-filter" (change)="onCategoryChange($any($event.target).value)">
+      <option value="">Todas</option>
+      @for (category of categories(); track category.id) {
+        <option [value]="category.id">{{ category.name }}</option>
+      }
+    </select>
+  </div>
+
+  @if (loading()) {
+    <p>Carregando produtos...</p>
+  } @else if (error()) {
+    <p class="error">{{ error() }}</p>
+  } @else if (products().length === 0) {
+    <p>Nenhum produto encontrado.</p>
+  } @else {
+    <div class="product-grid">
+      @for (product of products(); track product.id) {
+        <a class="product-card" [routerLink]="['/produtos', product.id]">
+          @if (product.imageUrl) {
+            <img [src]="product.imageUrl" [alt]="product.name" />
+          }
+          <h3>{{ product.name }}</h3>
+          <p class="price">{{ product.price | currency: 'BRL' }}</p>
+        </a>
+      }
+    </div>
+  }
+</section>
