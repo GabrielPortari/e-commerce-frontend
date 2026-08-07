@@ -1,48 +1,36 @@
 @if (loading()) {
-  <p>Carregando pedido...</p>
+  <app-skeleton height="14rem" />
 } @else if (error()) {
   <p class="error">{{ error() }}</p>
 } @else if (order(); as order) {
   <section class="order-confirmation">
-    <h1>Pedido #{{ order.id }} confirmado!</h1>
-    <p class="status">
-      Status:
-      @switch (order.status) {
-        @case ('SIMULATED') { Simulado }
-        @case ('CONFIRMED') { Confirmado }
-        @case ('CANCELED') { Cancelado }
-      }
-    </p>
-    <p>Data: {{ order.createdAt | date: 'dd/MM/yyyy HH:mm' }}</p>
+    <div class="order-status-hero">
+      <p class="order-status-eyebrow">Pedido #{{ order.id }}</p>
+      <h1>Pedido confirmado</h1>
+      <app-badge [tone]="statusTone(order.status)">{{ statusLabel(order.status) }}</app-badge>
+      <p class="order-date">{{ order.createdAt | date: 'dd/MM/yyyy HH:mm' }}</p>
+    </div>
 
-    <h2>Dados do cliente</h2>
-    <p>{{ order.customerName }} — {{ order.customerEmail }}</p>
-    <p>{{ order.customerAddress }}</p>
+    <div class="order-section card">
+      <h2>Dados do cliente</h2>
+      <p>{{ order.customerName }}</p>
+      <p>{{ order.customerEmail }}</p>
+      <p>{{ order.customerAddress }}</p>
+    </div>
 
-    <h2>Itens</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Produto</th>
-          <th>Quantidade</th>
-          <th>Preço unitário</th>
-          <th>Subtotal</th>
-        </tr>
-      </thead>
-      <tbody>
+    <div class="order-section card">
+      <h2>Itens</h2>
+      <ul class="order-items">
         @for (item of order.items; track item.id) {
-          <tr>
-            <td>{{ item.productName }}</td>
-            <td>{{ item.quantity }}</td>
-            <td>{{ item.unitPrice | currency: 'BRL' }}</td>
-            <td>{{ item.subtotal | currency: 'BRL' }}</td>
-          </tr>
+          <li class="order-item">
+            <span class="order-item-name">{{ item.productName }} &times; {{ item.quantity }}</span>
+            <span class="order-item-subtotal">{{ item.subtotal | currency: 'BRL' }}</span>
+          </li>
         }
-      </tbody>
-    </table>
+      </ul>
+      <p class="total">Total: {{ order.total | currency: 'BRL' }}</p>
+    </div>
 
-    <p class="total">Total: {{ order.total | currency: 'BRL' }}</p>
-
-    <a routerLink="/">Voltar à loja</a>
+    <a class="btn btn--primary" routerLink="/">Voltar à loja</a>
   </section>
 }

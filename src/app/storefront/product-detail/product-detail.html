@@ -1,11 +1,21 @@
 @if (loading()) {
-  <p>Carregando produto...</p>
+  <section class="product-detail">
+    <app-skeleton height="360px" />
+    <div class="info">
+      <app-skeleton height="1.75rem" width="70%" />
+      <app-skeleton height="1rem" width="30%" />
+      <app-skeleton height="4rem" />
+      <app-skeleton height="1.5rem" width="40%" />
+    </div>
+  </section>
 } @else if (error()) {
   <p class="error">{{ error() }}</p>
 } @else if (product(); as product) {
   <section class="product-detail">
     @if (product.imageUrl) {
       <img [src]="product.imageUrl" [alt]="product.name" />
+    } @else {
+      <div class="product-image-placeholder"></div>
     }
     <div class="info">
       <h1>{{ product.name }}</h1>
@@ -17,23 +27,26 @@
       <p class="stock">Estoque disponível: {{ product.stock }}</p>
 
       <div class="add-to-cart">
-        <label for="quantity">Quantidade</label>
-        <input
-          id="quantity"
-          type="number"
-          min="1"
-          [max]="product.stock"
-          [value]="quantity()"
-          (change)="setQuantity($any($event.target).value)"
-        />
-        <button type="button" [disabled]="addingToCart() || product.stock === 0" (click)="addToCart()">
+        <div class="field quantity-field">
+          <label class="field-label" for="quantity">Quantidade</label>
+          <input
+            id="quantity"
+            type="number"
+            min="1"
+            [max]="product.stock"
+            [value]="quantity()"
+            (change)="setQuantity($any($event.target).value)"
+          />
+        </div>
+        <button
+          type="button"
+          class="btn btn--primary"
+          [disabled]="addingToCart() || product.stock === 0"
+          (click)="addToCart()"
+        >
           {{ addingToCart() ? 'Adicionando...' : 'Adicionar ao carrinho' }}
         </button>
       </div>
-
-      @if (addedToCart()) {
-        <p class="success">Produto adicionado ao carrinho!</p>
-      }
     </div>
   </section>
 }
