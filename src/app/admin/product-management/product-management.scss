@@ -1,0 +1,32 @@
+.product-management {
+  padding: 1rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.product-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 400px;
+  margin-bottom: 2rem;
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .preview {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-top: 0.5rem;
+  }
+
+  .actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+}

@@ -1,0 +1,32 @@
+.cart {
+  padding: 1rem;
+  max-width: 900px;
+  margin: 0 auto;
+
+  img {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 4px;
+    vertical-align: middle;
+    margin-right: 0.5rem;
+  }
+
+  input[type='number'] {
+    width: 70px;
+  }
+}
+
+.cart-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+
+  .total {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0;
+  }
+}

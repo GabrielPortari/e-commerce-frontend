@@ -1,59 +1,95 @@
-# EcommerceFrontend
+# E-commerce — Frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.20.
+Frontend Angular de um e-commerce simples (catálogo de produtos, carrinho
+persistente, checkout mockado e painel admin), consumindo a API Spring Boot
+em [`e-commerce-api`](../e-commerce-api). Veja `roadmap.md` na raiz do
+projeto para o escopo completo e as decisões de arquitetura.
 
-## Development server
+Stack: Angular 21 (standalone components, Signals, Reactive Forms), SCSS,
+sem SSR (SPA client-side puro) e sem NgRx (estado gerenciado via Signals).
 
-To start a local development server, run:
+## Pré-requisitos
+
+- Node.js 20+ e npm
+- Docker (para o PostgreSQL da API)
+- JDK 21+ e o wrapper Maven (`./mvnw`, já incluso na API)
+
+## Rodando o projeto localmente (backend + banco + frontend)
+
+### 1. Banco de dados (Postgres via Docker)
 
 ```bash
+cd e-commerce-api
+docker compose up -d
+```
+
+### 2. API (Spring Boot)
+
+```bash
+cd e-commerce-api
+cp .env.example .env   # ajuste se necessário
+set -a && source .env && set +a   # bash; no PowerShell, defina as variáveis manualmente
+./mvnw spring-boot:run
+```
+
+A API sobe em `http://localhost:8080`. As migrations (Flyway) rodam
+automaticamente e criam o usuário admin de desenvolvimento:
+
+- **E-mail:** `admin@ecommerce.com`
+- **Senha:** `admin123`
+
+### 3. Frontend (Angular)
+
+```bash
+npm install
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Acesse `http://localhost:4200`. Por padrão, `src/environments/environment.ts`
+aponta para `http://localhost:8080/api` — não é necessário alterar nada para
+desenvolvimento local.
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Scripts disponíveis
 
 ```bash
-ng generate --help
+ng serve          # servidor de desenvolvimento (localhost:4200)
+ng build           # build de produção em dist/
+ng test            # testes unitários (Vitest)
 ```
 
-## Building
+## Estrutura do projeto
 
-To build the project run:
-
-```bash
-ng build
+```
+src/app
+├── core/
+│   ├── services/         # ApiService, AuthService, CartService, ProductService...
+│   ├── guards/            # authGuard
+│   ├── interceptors/       # sessionIdInterceptor, jwtInterceptor
+│   └── models/             # interfaces TS espelhando os DTOs da API
+├── storefront/            # vitrine pública (produtos, carrinho, checkout)
+├── admin/                 # painel administrativo (login, CRUD, pedidos)
+└── shared/components/     # header, footer
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+## Rotas principais
 
-## Running unit tests
+| Rota | Descrição | Acesso |
+|---|---|---|
+| `/` | Listagem de produtos | público |
+| `/produtos/:id` | Detalhe do produto | público |
+| `/carrinho` | Carrinho | público |
+| `/checkout` | Finalizar pedido | público |
+| `/pedido/:id` | Confirmação do pedido | público |
+| `/admin/login` | Login administrativo | público |
+| `/admin/produtos` | CRUD de produtos | admin |
+| `/admin/categorias` | CRUD de categorias | admin |
+| `/admin/pedidos` | Listagem de pedidos + status | admin |
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+## Notas
 
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- O `sessionId` do carrinho é gerado automaticamente (UUID) e persistido em
+  `localStorage`; não é necessário login para comprar.
+- O token JWT do admin também é persistido em `localStorage`
+  (`authToken`) e injetado automaticamente nas rotas administrativas.
+- Deploy (Vercel/Railway) ainda não configurado — ver Fase 8.5/8.6 do
+  `roadmap.md`.

@@ -1,1 +1,56 @@
-<p>cart works!</p>
+<section class="cart">
+  <h1>Carrinho</h1>
+
+  @if (actionError()) {
+    <p class="error">{{ actionError() }}</p>
+  }
+
+  @if (cartService.loading()) {
+    <p>Carregando carrinho...</p>
+  } @else if (cartService.error()) {
+    <p class="error">{{ cartService.error() }}</p>
+  } @else if (!cartService.cart() || cartService.cart()!.items.length === 0) {
+    <p>Seu carrinho está vazio.</p>
+  } @else {
+    <table>
+      <thead>
+        <tr>
+          <th>Produto</th>
+          <th>Preço</th>
+          <th>Quantidade</th>
+          <th>Subtotal</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of cartService.cart()!.items; track item.id) {
+          <tr>
+            <td>
+              @if (item.productImageUrl) {
+                <img [src]="item.productImageUrl" [alt]="item.productName" />
+              }
+              {{ item.productName }}
+            </td>
+            <td>{{ item.unitPrice | currency: 'BRL' }}</td>
+            <td>
+              <input
+                type="number"
+                min="1"
+                [value]="item.quantity"
+                (change)="updateQuantity(item.id, $any($event.target).value)"
+              />
+            </td>
+            <td>{{ item.subtotal | currency: 'BRL' }}</td>
+            <td><button type="button" (click)="removeItem(item.id)">Remover</button></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <div class="cart-summary">
+      <p class="total">Total: {{ cartService.cart()!.total | currency: 'BRL' }}</p>
+      <button type="button" (click)="clearCart()">Limpar carrinho</button>
+      <a routerLink="/checkout">Finalizar compra</a>
+    </div>
+  }
+</section>

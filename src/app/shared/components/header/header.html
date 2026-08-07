@@ -2,6 +2,12 @@
   <a class="brand" routerLink="/">E-commerce</a>
   <nav>
     <a routerLink="/">Produtos</a>
-    <a routerLink="/carrinho">Carrinho</a>
+    <a routerLink="/carrinho">Carrinho ({{ cartService.itemCount() }})</a>
+    @if (authService.isLoggedIn()) {
+      <a routerLink="/admin/pedidos">Admin</a>
+      <button type="button" (click)="logout()">Sair</button>
+    } @else {
+      <a routerLink="/admin/login">Admin</a>
+    }
   </nav>
 </header>

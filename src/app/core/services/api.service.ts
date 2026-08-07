@@ -8,7 +8,7 @@ export class ApiService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = environment.apiUrl;
 
-  get<T>(path: string, params?: Record<string, string | number | boolean>): Observable<T> {
+  get<T>(path: string, params?: Record<string, string | number | boolean | undefined>): Observable<T> {
     return this.http.get<T>(`${this.baseUrl}${path}`, { params: this.toHttpParams(params) });
   }
 
@@ -24,7 +24,9 @@ export class ApiService {
     return this.http.delete<T>(`${this.baseUrl}${path}`);
   }
 
-  private toHttpParams(params?: Record<string, string | number | boolean>): HttpParams | undefined {
+  private toHttpParams(
+    params?: Record<string, string | number | boolean | undefined>
+  ): HttpParams | undefined {
     if (!params) {
       return undefined;
     }

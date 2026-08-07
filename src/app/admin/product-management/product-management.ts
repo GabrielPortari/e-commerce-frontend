@@ -1,9 +1,135 @@
-import { Component } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
+import { CurrencyPipe } from '@angular/common';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { ProductService } from '../../core/services/product.service';
+import { CategoryService } from '../../core/services/category.service';
+import { ApiError, Category, Product } from '../../core/models';
 
 @Component({
   selector: 'app-product-management',
-  imports: [],
+  imports: [ReactiveFormsModule, CurrencyPipe],
   templateUrl: './product-management.html',
   styleUrl: './product-management.scss',
 })
-export class ProductManagement {}
+export class ProductManagement {
+  private readonly fb = inject(FormBuilder);
+  private readonly productService = inject(ProductService);
+  private readonly categoryService = inject(CategoryService);
+
+  protected readonly products = signal<Product[]>([]);
+  protected readonly categories = signal<Category[]>([]);
+  protected readonly loading = signal(true);
+  protected readonly error = signal<string | null>(null);
+  protected readonly editingId = signal<number | null>(null);
+  protected readonly uploadingImage = signal(false);
+  protected readonly saving = signal(false);
+
+  protected readonly form = this.fb.nonNullable.group({
+    name: ['', Validators.required],
+    description: [''],
+    price: [0, [Validators.required, Validators.min(0.01)]],
+    stock: [0, [Validators.required, Validators.min(0)]],
+    categoryId: [0, [Validators.required, Validators.min(1)]],
+    imageUrl: [''],
+  });
+
+  constructor() {
+    this.categoryService.getAll().subscribe({ next: (categories) => this.categories.set(categories) });
+    this.loadProducts();
+  }
+
+  private loadProducts(): void {
+    this.loading.set(true);
+    this.productService.getAllAdmin().subscribe({
+      next: (products) => {
+        this.products.set(products);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.error.set('Não foi possível carregar os produtos.');
+        this.loading.set(false);
+      },
+    });
+  }
+
+  protected startEdit(product: Product): void {
+    this.editingId.set(product.id);
+    this.form.setValue({
+      name: product.name,
+      description: product.description ?? '',
+      price: product.price,
+      stock: product.stock,
+      categoryId: product.category.id,
+      imageUrl: product.imageUrl ?? '',
+    });
+  }
+
+  protected cancelEdit(): void {
+    this.editingId.set(null);
+    this.form.reset({ name: '', description: '', price: 0, stock: 0, categoryId: 0, imageUrl: '' });
+  }
+
+  protected onImageSelected(input: HTMLInputElement): void {
+    const file = input.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    this.uploadingImage.set(true);
+    this.productService.uploadImage(file).subscribe({
+      next: (response) => {
+        this.form.controls.imageUrl.setValue(response.imageUrl);
+        this.uploadingImage.set(false);
+      },
+      error: () => {
+        this.error.set('Falha ao enviar a imagem.');
+        this.uploadingImage.set(false);
+      },
+    });
+  }
+
+  protected submit(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
+    const value = this.form.getRawValue();
+    const request = {
+      name: value.name,
+      description: value.description,
+      price: value.price,
+      stock: value.stock,
+      categoryId: value.categoryId,
+      imageUrl: value.imageUrl || null,
+    };
+
+    this.saving.set(true);
+    this.error.set(null);
+
+    const editingId = this.editingId();
+    const request$ = editingId
+      ? this.productService.update(editingId, request)
+      : this.productService.create(request);
+
+    request$.subscribe({
+      next: () => {
+        this.saving.set(false);
+        this.cancelEdit();
+        this.loadProducts();
+      },
+      error: (err: { error?: ApiError }) => {
+        this.error.set(err.error?.message ?? 'Erro ao salvar produto.');
+        this.saving.set(false);
+      },
+    });
+  }
+
+  protected deleteProduct(id: number): void {
+    this.error.set(null);
+    this.productService.delete(id).subscribe({
+      next: () => this.loadProducts(),
+      error: (err: { error?: ApiError }) => this.error.set(err.error?.message ?? 'Erro ao remover produto.'),
+    });
+  }
+}

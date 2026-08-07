@@ -1,1 +1,50 @@
-<p>category-management works!</p>
+<section class="category-management">
+  <h1>Categorias</h1>
+
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+
+  <form [formGroup]="createForm" (ngSubmit)="create()" class="create-form">
+    <label for="new-category-name">Nova categoria</label>
+    <input id="new-category-name" type="text" formControlName="name" />
+    <button type="submit">Adicionar</button>
+  </form>
+
+  @if (loading()) {
+    <p>Carregando categorias...</p>
+  } @else if (categories().length === 0) {
+    <p>Nenhuma categoria cadastrada.</p>
+  } @else {
+    <table>
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (category of categories(); track category.id) {
+          <tr>
+            @if (editingId() === category.id) {
+              <td>
+                <form [formGroup]="editForm" (ngSubmit)="saveEdit(category.id)">
+                  <input type="text" formControlName="name" />
+                  <button type="submit">Salvar</button>
+                  <button type="button" (click)="cancelEdit()">Cancelar</button>
+                </form>
+              </td>
+              <td></td>
+            } @else {
+              <td>{{ category.name }}</td>
+              <td>
+                <button type="button" (click)="startEdit(category)">Editar</button>
+                <button type="button" (click)="deleteCategory(category.id)">Remover</button>
+              </td>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</section>

@@ -1,1 +1,23 @@
-<p>login works!</p>
+<section class="admin-login">
+  <h1>Login administrativo</h1>
+
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <div class="field">
+      <label for="email">E-mail</label>
+      <input id="email" type="email" formControlName="email" />
+    </div>
+
+    <div class="field">
+      <label for="password">Senha</label>
+      <input id="password" type="password" formControlName="password" />
+    </div>
+
+    @if (error()) {
+      <p class="error">{{ error() }}</p>
+    }
+
+    <button type="submit" [disabled]="submitting()">
+      {{ submitting() ? 'Entrando...' : 'Entrar' }}
+    </button>
+  </form>
+</section>

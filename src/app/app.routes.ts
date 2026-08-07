@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -27,20 +28,20 @@ export const routes: Routes = [
     loadComponent: () => import('./admin/login/login').then((m) => m.Login)
   },
   {
-    // TODO(Fase 7.2): proteger com authGuard quando ele for criado
     path: 'admin/produtos',
+    canActivate: [authGuard],
     loadComponent: () =>
       import('./admin/product-management/product-management').then((m) => m.ProductManagement)
   },
   {
-    // TODO(Fase 7.2): proteger com authGuard quando ele for criado
     path: 'admin/categorias',
+    canActivate: [authGuard],
     loadComponent: () =>
       import('./admin/category-management/category-management').then((m) => m.CategoryManagement)
   },
   {
-    // TODO(Fase 7.2): proteger com authGuard quando ele for criado
     path: 'admin/pedidos',
+    canActivate: [authGuard],
     loadComponent: () => import('./admin/order-list/order-list').then((m) => m.OrderList)
   },
   {

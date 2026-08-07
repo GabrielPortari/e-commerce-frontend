@@ -1,1 +1,39 @@
-<p>product-detail works!</p>
+@if (loading()) {
+  <p>Carregando produto...</p>
+} @else if (error()) {
+  <p class="error">{{ error() }}</p>
+} @else if (product(); as product) {
+  <section class="product-detail">
+    @if (product.imageUrl) {
+      <img [src]="product.imageUrl" [alt]="product.name" />
+    }
+    <div class="info">
+      <h1>{{ product.name }}</h1>
+      <p class="category">{{ product.category.name }}</p>
+      @if (product.description) {
+        <p class="description">{{ product.description }}</p>
+      }
+      <p class="price">{{ product.price | currency: 'BRL' }}</p>
+      <p class="stock">Estoque disponível: {{ product.stock }}</p>
+
+      <div class="add-to-cart">
+        <label for="quantity">Quantidade</label>
+        <input
+          id="quantity"
+          type="number"
+          min="1"
+          [max]="product.stock"
+          [value]="quantity()"
+          (change)="setQuantity($any($event.target).value)"
+        />
+        <button type="button" [disabled]="addingToCart() || product.stock === 0" (click)="addToCart()">
+          {{ addingToCart() ? 'Adicionando...' : 'Adicionar ao carrinho' }}
+        </button>
+      </div>
+
+      @if (addedToCart()) {
+        <p class="success">Produto adicionado ao carrinho!</p>
+      }
+    </div>
+  </section>
+}
