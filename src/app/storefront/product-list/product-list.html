@@ -1,6 +1,6 @@
 <section class="product-list">
   <div class="filters">
-    <label for="category-filter">Categoria</label>
+    <label class="field-label" for="category-filter">Categoria</label>
     <select id="category-filter" (change)="onCategoryChange($any($event.target).value)">
       <option value="">Todas</option>
       @for (category of categories(); track category.id) {
@@ -10,17 +10,30 @@
   </div>
 
   @if (loading()) {
-    <p>Carregando produtos...</p>
+    <div class="product-grid">
+      @for (_ of skeletonItems; track $index) {
+        <div class="product-card-skeleton">
+          <app-skeleton height="180px" />
+          <app-skeleton height="1rem" width="70%" />
+          <app-skeleton height="1rem" width="40%" />
+        </div>
+      }
+    </div>
   } @else if (error()) {
     <p class="error">{{ error() }}</p>
   } @else if (products().length === 0) {
-    <p>Nenhum produto encontrado.</p>
+    <app-empty-state
+      title="Nenhum produto encontrado"
+      description="Tente selecionar outra categoria."
+    />
   } @else {
     <div class="product-grid">
       @for (product of products(); track product.id) {
-        <a class="product-card" [routerLink]="['/produtos', product.id]">
+        <a class="product-card card" [routerLink]="['/produtos', product.id]">
           @if (product.imageUrl) {
             <img [src]="product.imageUrl" [alt]="product.name" />
+          } @else {
+            <div class="product-card-placeholder"></div>
           }
           <h3>{{ product.name }}</h3>
           <p class="price">{{ product.price | currency: 'BRL' }}</p>

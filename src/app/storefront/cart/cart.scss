@@ -1,32 +1,125 @@
-.cart {
-  padding: 1rem;
-  max-width: 900px;
-  margin: 0 auto;
+@use 'mixins' as *;
 
-  img {
-    width: 48px;
-    height: 48px;
+.cart-items {
+  list-style: none;
+  margin: 0 0 var(--space-6);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.cart-item,
+.cart-item-skeleton {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+  align-items: center;
+
+  @include from(md) {
+    grid-template-columns: 2fr auto auto auto;
+  }
+}
+
+.cart-item-skeleton {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+
+  app-skeleton:last-child {
+    flex: 1;
+  }
+}
+
+.cart-item-product {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+
+  img,
+  .cart-item-placeholder {
+    width: 64px;
+    height: 64px;
     object-fit: cover;
-    border-radius: 4px;
-    vertical-align: middle;
-    margin-right: 0.5rem;
+    border-radius: var(--radius-sm);
+    flex-shrink: 0;
   }
 
-  input[type='number'] {
-    width: 70px;
+  .cart-item-placeholder {
+    background: var(--color-border);
+  }
+}
+
+.cart-item-name {
+  margin: 0;
+  font-weight: var(--weight-medium);
+}
+
+.cart-item-unit-price {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-ink-muted);
+}
+
+.cart-item-quantity {
+  margin-bottom: 0;
+
+  input {
+    width: 80px;
+  }
+
+  @include from(md) {
+    .field-label {
+      display: none;
+    }
+  }
+}
+
+.cart-item-subtotal {
+  margin: 0;
+  font-weight: var(--weight-semibold);
+}
+
+.cart-item-remove {
+  justify-self: start;
+
+  @include from(md) {
+    justify-self: end;
   }
 }
 
 .cart-summary {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 1rem;
+  position: sticky;
+  bottom: 0;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  box-shadow: var(--shadow-md);
+}
 
-  .total {
-    font-size: 1.25rem;
-    font-weight: 700;
-    margin: 0;
+.cart-summary-bar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  padding-bottom: var(--space-4);
+
+  @include from(sm) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
   }
+}
+
+.cart-summary-actions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.total {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  margin: 0;
 }

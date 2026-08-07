@@ -3,10 +3,24 @@ import { CurrencyPipe, DatePipe } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { OrderService } from '../../core/services/order.service';
 import { Order } from '../../core/models';
+import { Skeleton } from '../../shared/components/skeleton/skeleton';
+import { Badge, BadgeTone } from '../../shared/components/badge/badge';
+
+const STATUS_LABELS: Record<Order['status'], string> = {
+  SIMULATED: 'Simulado',
+  CONFIRMED: 'Confirmado',
+  CANCELED: 'Cancelado',
+};
+
+const STATUS_TONES: Record<Order['status'], BadgeTone> = {
+  SIMULATED: 'neutral',
+  CONFIRMED: 'success',
+  CANCELED: 'error',
+};
 
 @Component({
   selector: 'app-order-confirmation',
-  imports: [CurrencyPipe, DatePipe, RouterLink],
+  imports: [CurrencyPipe, DatePipe, RouterLink, Skeleton, Badge],
   templateUrl: './order-confirmation.html',
   styleUrl: './order-confirmation.scss',
 })
@@ -30,5 +44,13 @@ export class OrderConfirmation {
         this.loading.set(false);
       },
     });
+  }
+
+  protected statusLabel(status: Order['status']): string {
+    return STATUS_LABELS[status];
+  }
+
+  protected statusTone(status: Order['status']): BadgeTone {
+    return STATUS_TONES[status];
   }
 }
