@@ -1,0 +1,15 @@
+<div class="toast-container" role="status" aria-live="polite">
+  @for (toast of toasts(); track toast.id) {
+    <div class="toast" [class]="'toast--' + toast.tone">
+      <span>{{ toast.message }}</span>
+      <button
+        type="button"
+        class="toast-dismiss"
+        aria-label="Fechar notificação"
+        (click)="dismiss(toast.id)"
+      >
+        &times;
+      </button>
+    </div>
+  }
+</div>

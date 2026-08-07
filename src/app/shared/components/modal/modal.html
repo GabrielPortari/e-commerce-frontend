@@ -1,0 +1,22 @@
+@if (open()) {
+  <div class="modal-backdrop" (click)="onBackdropClick($event)">
+    <div class="modal-dialog" role="dialog" aria-modal="true" [attr.aria-label]="titleText()">
+      <div class="modal-header">
+        @if (titleText()) {
+          <h2 class="modal-title">{{ titleText() }}</h2>
+        }
+        <button
+          type="button"
+          class="modal-close"
+          aria-label="Fechar"
+          (click)="closed.emit()"
+        >
+          &times;
+        </button>
+      </div>
+      <div class="modal-body">
+        <ng-content></ng-content>
+      </div>
+    </div>
+  </div>
+}
