@@ -1,17 +1,15 @@
 .admin-login {
-  padding: 1rem;
   max-width: 360px;
-  margin: 2rem auto;
+  margin: var(--space-8) auto 0;
+
+  h1 {
+    font-size: var(--text-xl);
+    text-align: center;
+  }
 
   form {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
-  }
-
-  .field {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
+    gap: var(--space-2);
   }
 }

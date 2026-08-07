@@ -3,11 +3,16 @@ import { CurrencyPipe } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ProductService } from '../../core/services/product.service';
 import { CategoryService } from '../../core/services/category.service';
+import { ToastService } from '../../core/services/toast.service';
 import { ApiError, Category, Product } from '../../core/models';
+import { Skeleton } from '../../shared/components/skeleton/skeleton';
+import { EmptyState } from '../../shared/components/empty-state/empty-state';
+import { Badge } from '../../shared/components/badge/badge';
+import { Modal } from '../../shared/components/modal/modal';
 
 @Component({
   selector: 'app-product-management',
-  imports: [ReactiveFormsModule, CurrencyPipe],
+  imports: [ReactiveFormsModule, CurrencyPipe, Skeleton, EmptyState, Badge, Modal],
   templateUrl: './product-management.html',
   styleUrl: './product-management.scss',
 })
@@ -15,6 +20,7 @@ export class ProductManagement {
   private readonly fb = inject(FormBuilder);
   private readonly productService = inject(ProductService);
   private readonly categoryService = inject(CategoryService);
+  private readonly toastService = inject(ToastService);
 
   protected readonly products = signal<Product[]>([]);
   protected readonly categories = signal<Category[]>([]);
@@ -23,6 +29,8 @@ export class ProductManagement {
   protected readonly editingId = signal<number | null>(null);
   protected readonly uploadingImage = signal(false);
   protected readonly saving = signal(false);
+  protected readonly productPendingDeactivate = signal<Product | null>(null);
+  protected readonly skeletonItems = Array.from({ length: 4 });
 
   protected readonly form = this.fb.nonNullable.group({
     name: ['', Validators.required],
@@ -46,7 +54,7 @@ export class ProductManagement {
         this.loading.set(false);
       },
       error: () => {
-        this.error.set('Não foi possível carregar os produtos.');
+        this.toastService.error('Não foi possível carregar os produtos.');
         this.loading.set(false);
       },
     });
@@ -125,11 +133,29 @@ export class ProductManagement {
     });
   }
 
-  protected deleteProduct(id: number): void {
-    this.error.set(null);
-    this.productService.delete(id).subscribe({
-      next: () => this.loadProducts(),
-      error: (err: { error?: ApiError }) => this.error.set(err.error?.message ?? 'Erro ao remover produto.'),
+  protected requestDeactivate(product: Product): void {
+    this.productPendingDeactivate.set(product);
+  }
+
+  protected cancelDeactivate(): void {
+    this.productPendingDeactivate.set(null);
+  }
+
+  protected confirmDeactivate(): void {
+    const product = this.productPendingDeactivate();
+    if (!product) {
+      return;
+    }
+
+    this.productService.delete(product.id).subscribe({
+      next: () => {
+        this.productPendingDeactivate.set(null);
+        this.loadProducts();
+      },
+      error: (err: { error?: ApiError }) => {
+        this.productPendingDeactivate.set(null);
+        this.toastService.error(err.error?.message ?? 'Erro ao desativar produto.');
+      },
     });
   }
 }

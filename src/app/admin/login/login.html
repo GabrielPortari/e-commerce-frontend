@@ -1,14 +1,14 @@
-<section class="admin-login">
+<section class="admin-login card">
   <h1>Login administrativo</h1>
 
   <form [formGroup]="form" (ngSubmit)="submit()">
     <div class="field">
-      <label for="email">E-mail</label>
+      <label class="field-label" for="email">E-mail</label>
       <input id="email" type="email" formControlName="email" />
     </div>
 
     <div class="field">
-      <label for="password">Senha</label>
+      <label class="field-label" for="password">Senha</label>
       <input id="password" type="password" formControlName="password" />
     </div>
 
@@ -16,7 +16,7 @@
       <p class="error">{{ error() }}</p>
     }
 
-    <button type="submit" [disabled]="submitting()">
+    <button type="submit" class="btn btn--primary btn--block" [disabled]="submitting()">
       {{ submitting() ? 'Entrando...' : 'Entrar' }}
     </button>
   </form>
