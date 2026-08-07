@@ -1,13 +1,34 @@
 <header class="site-header">
-  <a class="brand" routerLink="/">E-commerce</a>
-  <nav>
-    <a routerLink="/">Produtos</a>
-    <a routerLink="/carrinho">Carrinho ({{ cartService.itemCount() }})</a>
-    @if (authService.isLoggedIn()) {
-      <a routerLink="/admin/pedidos">Admin</a>
-      <button type="button" (click)="logout()">Sair</button>
-    } @else {
-      <a routerLink="/admin/login">Admin</a>
-    }
-  </nav>
+  <div class="site-header-bar container">
+    <a class="brand" routerLink="/" (click)="closeMenu()">E-commerce</a>
+
+    <button
+      type="button"
+      class="menu-toggle"
+      [attr.aria-expanded]="menuOpen()"
+      aria-controls="site-nav"
+      aria-label="Abrir menu"
+      (click)="toggleMenu()"
+    >
+      <span class="menu-toggle-bar"></span>
+      <span class="menu-toggle-bar"></span>
+      <span class="menu-toggle-bar"></span>
+    </button>
+
+    <nav id="site-nav" class="site-nav" [class.site-nav--open]="menuOpen()">
+      <a routerLink="/" (click)="closeMenu()">Produtos</a>
+      <a routerLink="/carrinho" (click)="closeMenu()">
+        Carrinho
+        @if (cartService.itemCount() > 0) {
+          <span class="cart-count">{{ cartService.itemCount() }}</span>
+        }
+      </a>
+      @if (authService.isLoggedIn()) {
+        <a routerLink="/admin/pedidos" (click)="closeMenu()">Admin</a>
+        <button type="button" class="btn btn--text" (click)="logout()">Sair</button>
+      } @else {
+        <a routerLink="/admin/login" (click)="closeMenu()">Admin</a>
+      }
+    </nav>
+  </div>
 </header>
