@@ -65,6 +65,9 @@
     padding: var(--space-4);
     border-top: 1px solid var(--color-border);
     color: var(--color-ink);
+    justify-content: flex-start;
+    text-align: left;
+    width: 100%;
   }
 
   a:hover {
@@ -89,6 +92,8 @@
     .btn--text {
       padding: 0;
       border-top: none;
+      justify-content: center;
+      width: auto;
     }
 
     a:hover {
