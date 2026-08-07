@@ -1,50 +1,72 @@
 <section class="category-management">
   <h1>Categorias</h1>
 
-  @if (error()) {
-    <p class="error">{{ error() }}</p>
-  }
-
   <form [formGroup]="createForm" (ngSubmit)="create()" class="create-form">
-    <label for="new-category-name">Nova categoria</label>
-    <input id="new-category-name" type="text" formControlName="name" />
-    <button type="submit">Adicionar</button>
+    <div class="field create-form-field">
+      <label class="field-label" for="new-category-name">Nova categoria</label>
+      <input id="new-category-name" type="text" formControlName="name" />
+    </div>
+    <button type="submit" class="btn btn--primary">Adicionar</button>
   </form>
 
   @if (loading()) {
-    <p>Carregando categorias...</p>
+    <div class="category-rows">
+      @for (_ of skeletonItems; track $index) {
+        <div class="category-row card">
+          <app-skeleton height="1rem" width="50%" />
+        </div>
+      }
+    </div>
   } @else if (categories().length === 0) {
-    <p>Nenhuma categoria cadastrada.</p>
+    <app-empty-state title="Nenhuma categoria cadastrada" />
   } @else {
-    <table>
-      <thead>
-        <tr>
-          <th>Nome</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (category of categories(); track category.id) {
-          <tr>
-            @if (editingId() === category.id) {
-              <td>
-                <form [formGroup]="editForm" (ngSubmit)="saveEdit(category.id)">
-                  <input type="text" formControlName="name" />
-                  <button type="submit">Salvar</button>
-                  <button type="button" (click)="cancelEdit()">Cancelar</button>
-                </form>
-              </td>
-              <td></td>
-            } @else {
-              <td>{{ category.name }}</td>
-              <td>
-                <button type="button" (click)="startEdit(category)">Editar</button>
-                <button type="button" (click)="deleteCategory(category.id)">Remover</button>
-              </td>
-            }
-          </tr>
-        }
-      </tbody>
-    </table>
+    <ul class="category-rows">
+      @for (category of categories(); track category.id) {
+        <li class="category-row card">
+          @if (editingId() === category.id) {
+            <form [formGroup]="editForm" (ngSubmit)="saveEdit(category.id)" class="edit-form">
+              <input type="text" formControlName="name" />
+              <div class="edit-form-actions">
+                <button type="submit" class="btn btn--primary btn--sm">Salvar</button>
+                <button type="button" class="btn btn--secondary btn--sm" (click)="cancelEdit()">
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          } @else {
+            <span class="category-name">{{ category.name }}</span>
+            <div class="category-actions">
+              <button type="button" class="btn btn--secondary btn--sm" (click)="startEdit(category)">
+                Editar
+              </button>
+              <button
+                type="button"
+                class="btn btn--danger btn--sm"
+                (click)="requestDelete(category)"
+              >
+                Remover
+              </button>
+            </div>
+          }
+        </li>
+      }
+    </ul>
   }
 </section>
+
+<app-modal
+  [open]="categoryPendingDelete() !== null"
+  titleText="Remover categoria"
+  (closed)="cancelDelete()"
+>
+  @if (categoryPendingDelete(); as category) {
+    <p>Tem certeza que deseja remover a categoria "{{ category.name }}"?</p>
+    <p class="modal-hint">
+      Não será possível remover categorias que ainda têm produtos vinculados.
+    </p>
+    <div class="modal-actions">
+      <button type="button" class="btn btn--secondary" (click)="cancelDelete()">Cancelar</button>
+      <button type="button" class="btn btn--danger" (click)="confirmDelete()">Remover</button>
+    </div>
+  }
+</app-modal>

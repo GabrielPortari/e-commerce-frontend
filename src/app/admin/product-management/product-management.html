@@ -1,35 +1,33 @@
 <section class="product-management">
   <h1>Produtos</h1>
 
-  @if (error()) {
-    <p class="error">{{ error() }}</p>
-  }
-
-  <form [formGroup]="form" (ngSubmit)="submit()" class="product-form">
+  <form [formGroup]="form" (ngSubmit)="submit()" class="product-form card">
     <h2>{{ editingId() ? 'Editar produto' : 'Novo produto' }}</h2>
 
     <div class="field">
-      <label for="name">Nome</label>
+      <label class="field-label" for="name">Nome</label>
       <input id="name" type="text" formControlName="name" />
     </div>
 
     <div class="field">
-      <label for="description">Descrição</label>
+      <label class="field-label" for="description">Descrição</label>
       <textarea id="description" formControlName="description"></textarea>
     </div>
 
-    <div class="field">
-      <label for="price">Preço</label>
-      <input id="price" type="number" step="0.01" min="0.01" formControlName="price" />
+    <div class="field-row">
+      <div class="field">
+        <label class="field-label" for="price">Preço</label>
+        <input id="price" type="number" step="0.01" min="0.01" formControlName="price" />
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="stock">Estoque</label>
+        <input id="stock" type="number" min="0" formControlName="stock" />
+      </div>
     </div>
 
     <div class="field">
-      <label for="stock">Estoque</label>
-      <input id="stock" type="number" min="0" formControlName="stock" />
-    </div>
-
-    <div class="field">
-      <label for="categoryId">Categoria</label>
+      <label class="field-label" for="categoryId">Categoria</label>
       <select id="categoryId" formControlName="categoryId">
         <option [value]="0" disabled>Selecione</option>
         @for (category of categories(); track category.id) {
@@ -39,59 +37,85 @@
     </div>
 
     <div class="field">
-      <label for="image">Imagem</label>
+      <label class="field-label" for="image">Imagem</label>
       <input id="image" type="file" accept="image/*" #imageInput (change)="onImageSelected(imageInput)" />
       @if (uploadingImage()) {
-        <span>Enviando imagem...</span>
+        <span class="field-hint">Enviando imagem...</span>
       }
       @if (form.controls.imageUrl.value) {
         <img [src]="form.controls.imageUrl.value" alt="Prévia" class="preview" />
       }
     </div>
 
+    @if (error()) {
+      <p class="error">{{ error() }}</p>
+    }
+
     <div class="actions">
       @if (editingId()) {
-        <button type="button" (click)="cancelEdit()">Cancelar</button>
+        <button type="button" class="btn btn--secondary" (click)="cancelEdit()">Cancelar</button>
       }
-      <button type="submit" [disabled]="saving() || uploadingImage()">
+      <button type="submit" class="btn btn--primary" [disabled]="saving() || uploadingImage()">
         {{ saving() ? 'Salvando...' : editingId() ? 'Salvar alterações' : 'Criar produto' }}
       </button>
     </div>
   </form>
 
   @if (loading()) {
-    <p>Carregando produtos...</p>
+    <div class="product-rows">
+      @for (_ of skeletonItems; track $index) {
+        <div class="product-row card">
+          <app-skeleton height="1rem" width="70%" />
+          <app-skeleton height="1rem" width="40%" />
+        </div>
+      }
+    </div>
   } @else if (products().length === 0) {
-    <p>Nenhum produto cadastrado.</p>
+    <app-empty-state title="Nenhum produto cadastrado" />
   } @else {
-    <table>
-      <thead>
-        <tr>
-          <th>Nome</th>
-          <th>Categoria</th>
-          <th>Preço</th>
-          <th>Estoque</th>
-          <th>Status</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (product of products(); track product.id) {
-          <tr>
-            <td>{{ product.name }}</td>
-            <td>{{ product.category.name }}</td>
-            <td>{{ product.price | currency: 'BRL' }}</td>
-            <td>{{ product.stock }}</td>
-            <td>{{ product.active ? 'Ativo' : 'Inativo' }}</td>
-            <td>
-              <button type="button" (click)="startEdit(product)">Editar</button>
-              @if (product.active) {
-                <button type="button" (click)="deleteProduct(product.id)">Desativar</button>
-              }
-            </td>
-          </tr>
-        }
-      </tbody>
-    </table>
+    <ul class="product-rows">
+      @for (product of products(); track product.id) {
+        <li class="product-row card">
+          <span class="product-row-name">{{ product.name }}</span>
+          <span class="product-row-category">{{ product.category.name }}</span>
+          <span class="product-row-price">{{ product.price | currency: 'BRL' }}</span>
+          <span class="product-row-stock">Estoque: {{ product.stock }}</span>
+          <app-badge [tone]="product.active ? 'success' : 'neutral'">
+            {{ product.active ? 'Ativo' : 'Inativo' }}
+          </app-badge>
+          <div class="product-row-actions">
+            <button type="button" class="btn btn--secondary btn--sm" (click)="startEdit(product)">
+              Editar
+            </button>
+            @if (product.active) {
+              <button
+                type="button"
+                class="btn btn--danger btn--sm"
+                (click)="requestDeactivate(product)"
+              >
+                Desativar
+              </button>
+            }
+          </div>
+        </li>
+      }
+    </ul>
   }
 </section>
+
+<app-modal
+  [open]="productPendingDeactivate() !== null"
+  titleText="Desativar produto"
+  (closed)="cancelDeactivate()"
+>
+  @if (productPendingDeactivate(); as product) {
+    <p>Tem certeza que deseja desativar "{{ product.name }}"?</p>
+    <p class="modal-hint">
+      O produto deixa de aparecer na vitrine, mas continua no histórico de pedidos antigos.
+    </p>
+    <div class="modal-actions">
+      <button type="button" class="btn btn--secondary" (click)="cancelDeactivate()">Cancelar</button>
+      <button type="button" class="btn btn--danger" (click)="confirmDeactivate()">Desativar</button>
+    </div>
+  }
+</app-modal>

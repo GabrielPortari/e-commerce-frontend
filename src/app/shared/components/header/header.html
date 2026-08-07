@@ -7,7 +7,7 @@
       class="menu-toggle"
       [attr.aria-expanded]="menuOpen()"
       aria-controls="site-nav"
-      aria-label="Abrir menu"
+      [attr.aria-label]="menuOpen() ? 'Fechar menu' : 'Abrir menu'"
       (click)="toggleMenu()"
     >
       <span class="menu-toggle-bar"></span>
