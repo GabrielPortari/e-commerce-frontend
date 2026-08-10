@@ -56,6 +56,17 @@
   border-bottom: 1px solid var(--color-border);
 }
 
+.order-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.order-item-unit-price {
+  color: var(--color-ink-subtle);
+  font-size: var(--text-xs);
+}
+
 .total {
   font-size: var(--text-lg);
   font-weight: var(--weight-semibold);
