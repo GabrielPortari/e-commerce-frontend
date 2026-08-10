@@ -23,7 +23,10 @@
       <ul class="order-items">
         @for (item of order.items; track item.id) {
           <li class="order-item">
-            <span class="order-item-name">{{ item.productName }} &times; {{ item.quantity }}</span>
+            <span class="order-item-info">
+              <span class="order-item-name">{{ item.productName }} &times; {{ item.quantity }}</span>
+              <span class="order-item-unit-price">{{ item.unitPrice | currency: 'BRL' }} / un.</span>
+            </span>
             <span class="order-item-subtotal">{{ item.subtotal | currency: 'BRL' }}</span>
           </li>
         }

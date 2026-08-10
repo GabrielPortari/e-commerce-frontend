@@ -1,10 +1,6 @@
 <section class="order-list">
   <h1>Pedidos</h1>
 
-  @if (error()) {
-    <p class="error">{{ error() }}</p>
-  }
-
   <div class="filters">
     <label class="field-label" for="status-filter">Status</label>
     <select id="status-filter" (change)="setStatusFilter($any($event.target).value)">

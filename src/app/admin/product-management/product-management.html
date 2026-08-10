@@ -68,10 +68,6 @@
       }
     </div>
 
-    @if (error()) {
-      <p class="error">{{ error() }}</p>
-    }
-
     <div class="actions">
       @if (editingId()) {
         <button type="button" class="btn btn--secondary" (click)="cancelEdit()">Cancelar</button>

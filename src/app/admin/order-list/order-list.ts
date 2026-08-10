@@ -24,7 +24,6 @@ export class OrderList {
 
   protected readonly orders = signal<Order[]>([]);
   protected readonly loading = signal(true);
-  protected readonly error = signal<string | null>(null);
   protected readonly statusFilter = signal<OrderStatus | ''>('');
   protected readonly updatingId = signal<number | null>(null);
   protected readonly skeletonItems = Array.from({ length: 5 });
@@ -53,7 +52,7 @@ export class OrderList {
         this.loading.set(false);
       },
       error: () => {
-        this.error.set('Não foi possível carregar os pedidos.');
+        this.toastService.error('Não foi possível carregar os pedidos.');
         this.loading.set(false);
       },
     });
