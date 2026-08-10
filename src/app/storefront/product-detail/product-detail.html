@@ -23,14 +23,12 @@
       @if (product.description) {
         <p class="description">{{ product.description }}</p>
       }
-      @if (product.onSale && product.discountPrice !== null) {
-        <p class="price">
-          <span class="price-original">{{ product.price | currency: 'BRL' }}</span>
-          <span class="price-discount">{{ product.discountPrice | currency: 'BRL' }}</span>
-        </p>
-      } @else {
-        <p class="price">{{ product.price | currency: 'BRL' }}</p>
-      }
+      <app-product-price
+        [price]="product.price"
+        [onSale]="product.onSale"
+        [discountPrice]="product.discountPrice"
+        size="lg"
+      />
       <p class="stock">Estoque disponível: {{ product.stock }}</p>
 
       <div class="add-to-cart">

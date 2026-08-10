@@ -10,14 +10,14 @@
   </div>
 </section>
 
-@if (promotionsLoading() || hasPromotions()) {
+@if (loading() || hasPromotions()) {
   <section class="home-section">
     <div class="home-section-header">
       <h2>Promoções</h2>
       <a routerLink="/promocoes" class="btn btn--text">Ver mais</a>
     </div>
 
-    @if (promotionsLoading()) {
+    @if (loading()) {
       <div class="product-grid">
         @for (_ of skeletonItems; track $index) {
           <div class="product-card-skeleton">
@@ -53,6 +53,8 @@
         </div>
       }
     </div>
+  } @else if (error()) {
+    <p class="error">{{ error() }}</p>
   } @else {
     <div class="product-grid">
       @for (product of newArrivals(); track product.id) {

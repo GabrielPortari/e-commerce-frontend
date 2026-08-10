@@ -26,30 +26,31 @@ export class Home {
   private readonly productService = inject(ProductService);
 
   protected readonly loading = signal(true);
-  protected readonly promotionsLoading = signal(true);
-  protected readonly promotions = signal<Product[]>([]);
-  protected readonly newArrivals = signal<Product[]>([]);
-  protected readonly featuredCategories = signal<FeaturedCategory[]>([]);
+  protected readonly error = signal<string | null>(null);
+  protected readonly allProducts = signal<Product[]>([]);
   protected readonly skeletonItems = Array.from({ length: 4 });
 
+  protected readonly promotions = computed(() =>
+    this.allProducts()
+      .filter((product) => product.onSale)
+      .slice(0, PROMOTIONS_LIMIT)
+  );
   protected readonly hasPromotions = computed(() => this.promotions().length > 0);
+  protected readonly newArrivals = computed(() =>
+    this.sortByNewest(this.allProducts()).slice(0, NEW_ARRIVALS_LIMIT)
+  );
+  protected readonly featuredCategories = computed(() => this.buildFeaturedCategories(this.allProducts()));
 
   constructor() {
     this.productService.getAll().subscribe({
       next: (products) => {
-        this.newArrivals.set(this.sortByNewest(products).slice(0, NEW_ARRIVALS_LIMIT));
-        this.featuredCategories.set(this.buildFeaturedCategories(products));
+        this.allProducts.set(products);
         this.loading.set(false);
       },
-      error: () => this.loading.set(false),
-    });
-
-    this.productService.getAll({ onSale: true }).subscribe({
-      next: (products) => {
-        this.promotions.set(products.slice(0, PROMOTIONS_LIMIT));
-        this.promotionsLoading.set(false);
+      error: () => {
+        this.error.set('Não foi possível carregar os produtos.');
+        this.loading.set(false);
       },
-      error: () => this.promotionsLoading.set(false),
     });
   }
 

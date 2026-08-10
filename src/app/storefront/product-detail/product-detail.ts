@@ -1,15 +1,15 @@
 import { Component, inject, signal } from '@angular/core';
-import { CurrencyPipe } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { ProductService } from '../../core/services/product.service';
 import { CartService } from '../../core/services/cart.service';
 import { ToastService } from '../../core/services/toast.service';
 import { Product } from '../../core/models';
 import { Skeleton } from '../../shared/components/skeleton/skeleton';
+import { ProductPrice } from '../../shared/components/product-price/product-price';
 
 @Component({
   selector: 'app-product-detail',
-  imports: [CurrencyPipe, Skeleton],
+  imports: [Skeleton, ProductPrice],
   templateUrl: './product-detail.html',
   styleUrl: './product-detail.scss',
 })

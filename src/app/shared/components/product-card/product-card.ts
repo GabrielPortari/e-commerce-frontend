@@ -1,12 +1,12 @@
 import { Component, input } from '@angular/core';
-import { CurrencyPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Product } from '../../../core/models';
 import { Badge } from '../badge/badge';
+import { ProductPrice } from '../product-price/product-price';
 
 @Component({
   selector: 'app-product-card',
-  imports: [RouterLink, CurrencyPipe, Badge],
+  imports: [RouterLink, Badge, ProductPrice],
   templateUrl: './product-card.html',
   styleUrl: './product-card.scss',
 })
