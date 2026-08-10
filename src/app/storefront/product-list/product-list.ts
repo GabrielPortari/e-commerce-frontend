@@ -1,5 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ProductService } from '../../core/services/product.service';
 import { CategoryService } from '../../core/services/category.service';
 import { Category, Product } from '../../core/models';
@@ -17,6 +18,7 @@ export class ProductList {
   protected readonly skeletonItems = Array.from({ length: 8 });
 
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly productService = inject(ProductService);
   private readonly categoryService = inject(CategoryService);
 
@@ -31,16 +33,19 @@ export class ProductList {
       next: (categories) => this.categories.set(categories),
     });
 
-    const categoryParam = this.route.snapshot.queryParamMap.get('category');
-    if (categoryParam) {
-      this.selectedCategoryId.set(Number(categoryParam));
-    }
-    this.loadProducts();
+    this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((params) => {
+      const categoryParam = params.get('category');
+      this.selectedCategoryId.set(categoryParam ? Number(categoryParam) : null);
+      this.loadProducts();
+    });
   }
 
   protected onCategoryChange(categoryId: string): void {
-    this.selectedCategoryId.set(categoryId ? Number(categoryId) : null);
-    this.loadProducts();
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { category: categoryId || null },
+      queryParamsHandling: 'merge',
+    });
   }
 
   private loadProducts(): void {
