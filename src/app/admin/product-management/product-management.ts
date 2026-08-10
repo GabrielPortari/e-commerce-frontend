@@ -40,7 +40,7 @@ export class ProductManagement {
     categoryId: [0, [Validators.required, Validators.min(1)]],
     imageUrl: [''],
     onSale: [false],
-    discountPrice: [0, [Validators.min(0.01)]],
+    discountPrice: [0],
   });
 
   constructor() {
@@ -78,6 +78,7 @@ export class ProductManagement {
 
   protected cancelEdit(): void {
     this.editingId.set(null);
+    this.error.set(null);
     this.form.reset({
       name: '',
       description: '',
@@ -116,6 +117,12 @@ export class ProductManagement {
     }
 
     const value = this.form.getRawValue();
+
+    if (value.onSale && !(value.discountPrice > 0)) {
+      this.error.set('Informe um preço promocional maior que zero.');
+      return;
+    }
+
     const request = {
       name: value.name,
       description: value.description,
