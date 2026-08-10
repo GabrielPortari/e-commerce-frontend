@@ -45,9 +45,20 @@
   }
 
   .price {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-3);
     font-size: var(--text-2xl);
     font-weight: var(--weight-semibold);
+    color: var(--color-accent);
     margin: var(--space-2) 0 0;
+  }
+
+  .price-original {
+    font-size: var(--text-base);
+    font-weight: var(--weight-regular);
+    color: var(--color-ink-subtle);
+    text-decoration: line-through;
   }
 
   .stock {

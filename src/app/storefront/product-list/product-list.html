@@ -1,7 +1,11 @@
 <section class="product-list">
   <div class="filters">
     <label class="field-label" for="category-filter">Categoria</label>
-    <select id="category-filter" (change)="onCategoryChange($any($event.target).value)">
+    <select
+      id="category-filter"
+      [value]="selectedCategoryId() ?? ''"
+      (change)="onCategoryChange($any($event.target).value)"
+    >
       <option value="">Todas</option>
       @for (category of categories(); track category.id) {
         <option [value]="category.id">{{ category.name }}</option>
@@ -29,15 +33,7 @@
   } @else {
     <div class="product-grid">
       @for (product of products(); track product.id) {
-        <a class="product-card card" [routerLink]="['/produtos', product.id]">
-          @if (product.imageUrl) {
-            <img [src]="product.imageUrl" [alt]="product.name" />
-          } @else {
-            <div class="product-card-placeholder"></div>
-          }
-          <h3>{{ product.name }}</h3>
-          <p class="price">{{ product.price | currency: 'BRL' }}</p>
-        </a>
+        <app-product-card [product]="product" />
       }
     </div>
   }

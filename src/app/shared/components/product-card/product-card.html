@@ -1,0 +1,21 @@
+<a class="product-card card" [routerLink]="['/produtos', product().id]">
+  <div class="product-card-media">
+    @if (product().imageUrl) {
+      <img [src]="product().imageUrl" [alt]="product().name" />
+    } @else {
+      <div class="product-card-placeholder"></div>
+    }
+    @if (product().onSale) {
+      <app-badge class="product-card-tag" tone="accent">Promoção</app-badge>
+    }
+  </div>
+  <h3>{{ product().name }}</h3>
+  @if (product().onSale && product().discountPrice !== null) {
+    <p class="price">
+      <span class="price-original">{{ product().price | currency: 'BRL' }}</span>
+      <span class="price-discount">{{ product().discountPrice | currency: 'BRL' }}</span>
+    </p>
+  } @else {
+    <p class="price">{{ product().price | currency: 'BRL' }}</p>
+  }
+</a>

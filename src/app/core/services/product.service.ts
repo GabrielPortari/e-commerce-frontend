@@ -4,9 +4,10 @@ import { ApiService } from './api.service';
 import { Product } from '../models';
 
 export interface ProductFilters {
-  [key: string]: string | number | undefined;
+  [key: string]: string | number | boolean | undefined;
   category?: number;
   name?: string;
+  onSale?: boolean;
 }
 
 export interface ProductRequest {
@@ -16,6 +17,8 @@ export interface ProductRequest {
   stock: number;
   imageUrl: string | null;
   categoryId: number;
+  onSale: boolean;
+  discountPrice: number | null;
 }
 
 export interface ImageUploadResponse {

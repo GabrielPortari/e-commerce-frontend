@@ -171,6 +171,80 @@ button:disabled {
   padding: var(--space-4);
 }
 
+// Grid de cards de produto — reaproveitado no catálogo, promoções e home.
+.product-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+
+  @media (min-width: 480px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.product-card-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+// Drawer lateral (off-canvas) — reaproveitado no menu de categorias e telas
+// futuras que precisem do mesmo padrão de painel deslizante com backdrop.
+.drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(26, 26, 24, 0.45);
+  z-index: 100;
+}
+
+.drawer-panel {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 85%;
+  max-width: 320px;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+
+  h2 {
+    margin: 0;
+    font-size: var(--text-lg);
+  }
+}
+
+.drawer-close {
+  background: transparent;
+  border: none;
+  font-size: var(--text-xl);
+  line-height: 1;
+  color: var(--color-ink-muted);
+  padding: var(--space-1);
+
+  &:hover {
+    color: var(--color-ink);
+  }
+}
+
 // Container — largura máxima de conteúdo com padding lateral responsivo.
 .container {
   width: 100%;
