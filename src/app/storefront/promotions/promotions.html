@@ -1,17 +1,5 @@
-<section class="product-list">
-  <div class="filters">
-    <label class="field-label" for="category-filter">Categoria</label>
-    <select
-      id="category-filter"
-      [value]="selectedCategoryId() ?? ''"
-      (change)="onCategoryChange($any($event.target).value)"
-    >
-      <option value="">Todas</option>
-      @for (category of categories(); track category.id) {
-        <option [value]="category.id">{{ category.name }}</option>
-      }
-    </select>
-  </div>
+<section class="promotions">
+  <h1>Promoções</h1>
 
   @if (loading()) {
     <div class="product-grid">
@@ -27,8 +15,8 @@
     <p class="error">{{ error() }}</p>
   } @else if (products().length === 0) {
     <app-empty-state
-      title="Nenhum produto encontrado"
-      description="Tente selecionar outra categoria."
+      title="Nenhuma promoção no momento"
+      description="Volte em breve para conferir novas ofertas."
     />
   } @else {
     <div class="product-grid">

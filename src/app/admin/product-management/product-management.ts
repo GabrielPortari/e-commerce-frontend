@@ -39,6 +39,8 @@ export class ProductManagement {
     stock: [0, [Validators.required, Validators.min(0)]],
     categoryId: [0, [Validators.required, Validators.min(1)]],
     imageUrl: [''],
+    onSale: [false],
+    discountPrice: [0],
   });
 
   constructor() {
@@ -69,12 +71,24 @@ export class ProductManagement {
       stock: product.stock,
       categoryId: product.category.id,
       imageUrl: product.imageUrl ?? '',
+      onSale: product.onSale,
+      discountPrice: product.discountPrice ?? 0,
     });
   }
 
   protected cancelEdit(): void {
     this.editingId.set(null);
-    this.form.reset({ name: '', description: '', price: 0, stock: 0, categoryId: 0, imageUrl: '' });
+    this.error.set(null);
+    this.form.reset({
+      name: '',
+      description: '',
+      price: 0,
+      stock: 0,
+      categoryId: 0,
+      imageUrl: '',
+      onSale: false,
+      discountPrice: 0,
+    });
   }
 
   protected onImageSelected(input: HTMLInputElement): void {
@@ -103,6 +117,12 @@ export class ProductManagement {
     }
 
     const value = this.form.getRawValue();
+
+    if (value.onSale && !(value.discountPrice > 0)) {
+      this.error.set('Informe um preço promocional maior que zero.');
+      return;
+    }
+
     const request = {
       name: value.name,
       description: value.description,
@@ -110,6 +130,8 @@ export class ProductManagement {
       stock: value.stock,
       categoryId: value.categoryId,
       imageUrl: value.imageUrl || null,
+      onSale: value.onSale,
+      discountPrice: value.onSale ? value.discountPrice : null,
     };
 
     this.saving.set(true);

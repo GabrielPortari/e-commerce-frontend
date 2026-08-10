@@ -4,11 +4,19 @@ import { authGuard } from './core/guards/auth.guard';
 export const routes: Routes = [
   {
     path: '',
+    loadComponent: () => import('./storefront/home/home').then((m) => m.Home)
+  },
+  {
+    path: 'produtos',
     loadComponent: () => import('./storefront/product-list/product-list').then((m) => m.ProductList)
   },
   {
     path: 'produtos/:id',
     loadComponent: () => import('./storefront/product-detail/product-detail').then((m) => m.ProductDetail)
+  },
+  {
+    path: 'promocoes',
+    loadComponent: () => import('./storefront/promotions/promotions').then((m) => m.Promotions)
   },
   {
     path: 'carrinho',

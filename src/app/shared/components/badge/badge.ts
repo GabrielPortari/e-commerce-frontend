@@ -1,6 +1,6 @@
 import { Component, input } from '@angular/core';
 
-export type BadgeTone = 'neutral' | 'success' | 'error' | 'warning';
+export type BadgeTone = 'neutral' | 'success' | 'error' | 'warning' | 'accent';
 
 @Component({
   selector: 'app-badge',

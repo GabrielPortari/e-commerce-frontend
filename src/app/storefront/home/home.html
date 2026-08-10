@@ -1,0 +1,91 @@
+<section class="hero">
+  <div class="hero-content">
+    <p class="hero-eyebrow">Sobre nós</p>
+    <h1>Roupas pensadas para o seu dia a dia</h1>
+    <p class="hero-text">
+      Selecionamos peças com qualidade e bom caimento, direto para a sua casa. Um catálogo
+      enxuto, sem enrolação, com atendimento próximo do início ao fim da compra.
+    </p>
+    <a routerLink="/produtos" class="btn btn--primary">Ver produtos</a>
+  </div>
+</section>
+
+@if (loading() || hasPromotions()) {
+  <section class="home-section">
+    <div class="home-section-header">
+      <h2>Promoções</h2>
+      <a routerLink="/promocoes" class="btn btn--text">Ver mais</a>
+    </div>
+
+    @if (loading()) {
+      <div class="product-grid">
+        @for (_ of skeletonItems; track $index) {
+          <div class="product-card-skeleton">
+            <app-skeleton height="180px" />
+            <app-skeleton height="1rem" width="70%" />
+            <app-skeleton height="1rem" width="40%" />
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="product-grid">
+        @for (product of promotions(); track product.id) {
+          <app-product-card [product]="product" />
+        }
+      </div>
+    }
+  </section>
+}
+
+<section class="home-section">
+  <div class="home-section-header">
+    <h2>Novidades</h2>
+    <a routerLink="/produtos" class="btn btn--text">Ver catálogo</a>
+  </div>
+
+  @if (loading()) {
+    <div class="product-grid">
+      @for (_ of skeletonItems; track $index) {
+        <div class="product-card-skeleton">
+          <app-skeleton height="180px" />
+          <app-skeleton height="1rem" width="70%" />
+          <app-skeleton height="1rem" width="40%" />
+        </div>
+      }
+    </div>
+  } @else if (error()) {
+    <p class="error">{{ error() }}</p>
+  } @else {
+    <div class="product-grid">
+      @for (product of newArrivals(); track product.id) {
+        <app-product-card [product]="product" />
+      }
+    </div>
+  }
+</section>
+
+@if (!loading() && featuredCategories().length > 0) {
+  <section class="home-section">
+    <div class="home-section-header">
+      <h2>Compre por categoria</h2>
+    </div>
+
+    <div class="category-grid">
+      @for (category of featuredCategories(); track category.id) {
+        <a
+          class="category-card card"
+          [routerLink]="['/produtos']"
+          [queryParams]="{ category: category.id }"
+        >
+          @if (category.imageUrl) {
+            <img [src]="category.imageUrl" [alt]="category.name" />
+          } @else {
+            <div class="category-card-placeholder"></div>
+          }
+          <h3>{{ category.name }}</h3>
+          <p class="category-card-count">{{ category.productCount }} produtos</p>
+        </a>
+      }
+    </div>
+  </section>
+}

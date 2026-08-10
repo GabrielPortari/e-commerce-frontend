@@ -1,0 +1,8 @@
+@if (onSale() && discountPrice() !== null) {
+  <p class="price" [class.price--lg]="size() === 'lg'">
+    <span class="price-original">{{ price() | currency: 'BRL' }}</span>
+    <span class="price-discount">{{ discountPrice() | currency: 'BRL' }}</span>
+  </p>
+} @else {
+  <p class="price" [class.price--lg]="size() === 'lg'">{{ price() | currency: 'BRL' }}</p>
+}
