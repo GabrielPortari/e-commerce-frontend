@@ -1,5 +1,21 @@
 <header class="site-header">
   <div class="site-header-bar container">
+    <button
+      type="button"
+      class="category-toggle"
+      [attr.aria-expanded]="categoryMenuOpen()"
+      aria-controls="category-nav"
+      [attr.aria-label]="categoryMenuOpen() ? 'Fechar categorias' : 'Abrir categorias'"
+      (click)="toggleCategoryMenu()"
+    >
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+        <path
+          fill="currentColor"
+          d="M4 5h16v2H4V5Zm0 6h16v2H4v-2Zm0 6h10v2H4v-2Z"
+        />
+      </svg>
+    </button>
+
     <a class="brand" routerLink="/" (click)="closeMenu()">E-commerce</a>
 
     <button
@@ -16,7 +32,8 @@
     </button>
 
     <nav id="site-nav" class="site-nav" [class.site-nav--open]="menuOpen()">
-      <a routerLink="/" (click)="closeMenu()">Produtos</a>
+      <a routerLink="/produtos" (click)="closeMenu()">Produtos</a>
+      <a routerLink="/promocoes" (click)="closeMenu()">Promoções</a>
       <a routerLink="/carrinho" (click)="closeMenu()">
         Carrinho
         @if (cartService.itemCount() > 0) {
@@ -32,3 +49,33 @@
     </nav>
   </div>
 </header>
+
+@if (categoryMenuOpen()) {
+  <div class="drawer-backdrop" (click)="closeCategoryMenu()">
+    <nav
+      id="category-nav"
+      class="drawer-panel category-drawer"
+      aria-label="Categorias"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="drawer-header">
+        <h2>Categorias</h2>
+        <button type="button" class="drawer-close" aria-label="Fechar categorias" (click)="closeCategoryMenu()">
+          &times;
+        </button>
+      </div>
+      <ul>
+        <li>
+          <a routerLink="/produtos" (click)="closeCategoryMenu()">Todos os produtos</a>
+        </li>
+        @for (category of categories(); track category.id) {
+          <li>
+            <a [routerLink]="['/produtos']" [queryParams]="{ category: category.id }" (click)="closeCategoryMenu()">
+              {{ category.name }}
+            </a>
+          </li>
+        }
+      </ul>
+    </nav>
+  </div>
+}
