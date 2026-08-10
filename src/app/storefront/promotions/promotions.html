@@ -1,0 +1,28 @@
+<section class="promotions">
+  <h1>Promoções</h1>
+
+  @if (loading()) {
+    <div class="product-grid">
+      @for (_ of skeletonItems; track $index) {
+        <div class="product-card-skeleton">
+          <app-skeleton height="180px" />
+          <app-skeleton height="1rem" width="70%" />
+          <app-skeleton height="1rem" width="40%" />
+        </div>
+      }
+    </div>
+  } @else if (error()) {
+    <p class="error">{{ error() }}</p>
+  } @else if (products().length === 0) {
+    <app-empty-state
+      title="Nenhuma promoção no momento"
+      description="Volte em breve para conferir novas ofertas."
+    />
+  } @else {
+    <div class="product-grid">
+      @for (product of products(); track product.id) {
+        <app-product-card [product]="product" />
+      }
+    </div>
+  }
+</section>
