@@ -25,7 +25,6 @@ export class ProductManagement {
   protected readonly products = signal<Product[]>([]);
   protected readonly categories = signal<Category[]>([]);
   protected readonly loading = signal(true);
-  protected readonly error = signal<string | null>(null);
   protected readonly editingId = signal<number | null>(null);
   protected readonly uploadingImage = signal(false);
   protected readonly saving = signal(false);
@@ -78,7 +77,6 @@ export class ProductManagement {
 
   protected cancelEdit(): void {
     this.editingId.set(null);
-    this.error.set(null);
     this.form.reset({
       name: '',
       description: '',
@@ -104,7 +102,7 @@ export class ProductManagement {
         this.uploadingImage.set(false);
       },
       error: () => {
-        this.error.set('Falha ao enviar a imagem.');
+        this.toastService.error('Falha ao enviar a imagem.');
         this.uploadingImage.set(false);
       },
     });
@@ -119,7 +117,7 @@ export class ProductManagement {
     const value = this.form.getRawValue();
 
     if (value.onSale && !(value.discountPrice > 0)) {
-      this.error.set('Informe um preço promocional maior que zero.');
+      this.toastService.error('Informe um preço promocional maior que zero.');
       return;
     }
 
@@ -135,7 +133,6 @@ export class ProductManagement {
     };
 
     this.saving.set(true);
-    this.error.set(null);
 
     const editingId = this.editingId();
     const request$ = editingId
@@ -149,7 +146,7 @@ export class ProductManagement {
         this.loadProducts();
       },
       error: (err: { error?: ApiError }) => {
-        this.error.set(err.error?.message ?? 'Erro ao salvar produto.');
+        this.toastService.error(err.error?.message ?? 'Erro ao salvar produto.');
         this.saving.set(false);
       },
     });
