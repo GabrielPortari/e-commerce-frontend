@@ -168,7 +168,7 @@
     </div>
 
     <div class="field">
-      <label class="field-label" for="image">Imagem</label>
+      <label class="field-label" for="image">Imagem de capa</label>
       <input id="image" type="file" accept="image/*" #imageInput (change)="onImageSelected(imageInput)" />
       @if (uploadingImage()) {
         <span class="field-hint">Enviando imagem...</span>
@@ -177,6 +177,40 @@
         <img [src]="form.controls.imageUrl.value" alt="Prévia" class="preview" />
       }
     </div>
+
+    @if (editingId()) {
+      <div class="field">
+        <label class="field-label" for="gallery-image">Fotos extras (galeria)</label>
+        <input
+          id="gallery-image"
+          type="file"
+          accept="image/*"
+          #galleryImageInput
+          (change)="onGalleryImageSelected(galleryImageInput)"
+        />
+        @if (uploadingGalleryImage()) {
+          <span class="field-hint">Enviando imagem...</span>
+        }
+
+        @if (galleryImages().length > 0) {
+          <div class="gallery-preview">
+            @for (image of galleryImages(); track image.id) {
+              <div class="gallery-preview-item">
+                <img [src]="image.imageUrl" alt="Prévia da galeria" />
+                <button
+                  type="button"
+                  class="gallery-preview-remove"
+                  aria-label="Remover imagem"
+                  (click)="removeGalleryImage(image)"
+                >
+                  &times;
+                </button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
 
     <div class="modal-actions">
       <button type="button" class="btn btn--secondary" (click)="closeForm()">Cancelar</button>

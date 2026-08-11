@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
-import { Product } from '../models';
+import { Product, ProductImage } from '../models';
 
 export interface ProductFilters {
   [key: string]: string | number | boolean | undefined;
@@ -63,5 +63,15 @@ export class ProductService {
     const formData = new FormData();
     formData.append('file', file);
     return this.api.post<ImageUploadResponse>('/products/upload-image', formData);
+  }
+
+  addGalleryImage(productId: number, file: File): Observable<ProductImage[]> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.api.post<ProductImage[]>(`/products/${productId}/images`, formData);
+  }
+
+  deleteGalleryImage(productId: number, imageId: number): Observable<ProductImage[]> {
+    return this.api.delete<ProductImage[]>(`/products/${productId}/images/${imageId}`);
   }
 }

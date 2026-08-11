@@ -12,11 +12,29 @@
   <p class="error">{{ error() }}</p>
 } @else if (product(); as product) {
   <section class="product-detail">
-    @if (product.imageUrl) {
-      <img [src]="product.imageUrl" [alt]="product.name" />
-    } @else {
-      <div class="product-image-placeholder"></div>
-    }
+    <div class="gallery">
+      @if (galleryImages().length > 0) {
+        <img [src]="galleryImages()[activeImageIndex()]" [alt]="product.name" class="gallery-main" />
+      } @else {
+        <div class="product-image-placeholder gallery-main"></div>
+      }
+
+      @if (galleryImages().length > 1) {
+        <div class="gallery-thumbs">
+          @for (url of galleryImages(); track $index) {
+            <button
+              type="button"
+              class="gallery-thumb"
+              [class.is-active]="$index === activeImageIndex()"
+              [attr.aria-label]="'Ver foto ' + ($index + 1)"
+              (click)="selectImage($index)"
+            >
+              <img [src]="url" alt="" />
+            </button>
+          }
+        </div>
+      }
+    </div>
     <div class="info">
       <h1>{{ product.name }}</h1>
       <p class="category">{{ product.category.name }}</p>

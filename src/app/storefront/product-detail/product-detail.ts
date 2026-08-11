@@ -1,4 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { ProductService } from '../../core/services/product.service';
 import { CartService } from '../../core/services/cart.service';
@@ -27,19 +28,45 @@ export class ProductDetail {
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
   protected readonly addingToCart = signal(false);
+  protected readonly activeImageIndex = signal(0);
+
+  // Foto de capa (imageUrl) + galeria extra (images) viram uma lista só pro
+  // carrossel — do ponto de vista do visitante não existe distinção entre
+  // "capa" e "extra", é tudo foto do produto.
+  protected readonly galleryImages = computed(() => {
+    const product = this.product();
+    if (!product) {
+      return [];
+    }
+    const cover = product.imageUrl ? [product.imageUrl] : [];
+    return [...cover, ...product.images.map((image) => image.imageUrl)];
+  });
 
   constructor() {
-    const id = Number(this.route.snapshot.paramMap.get('id'));
-    this.productService.getById(id).subscribe({
-      next: (product) => {
-        this.product.set(product);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.error.set('Produto não encontrado.');
-        this.loading.set(false);
-      },
+    // route.paramMap (não snapshot): links de "produtos relacionados" apontam
+    // pra mesma rota /produtos/:id com outro id, e o Angular reaproveita a
+    // instância do componente — snapshot só lia o id uma vez, na criação.
+    this.route.paramMap.pipe(takeUntilDestroyed()).subscribe((params) => {
+      const id = Number(params.get('id'));
+      this.loading.set(true);
+      this.error.set(null);
+      this.activeImageIndex.set(0);
+
+      this.productService.getById(id).subscribe({
+        next: (product) => {
+          this.product.set(product);
+          this.loading.set(false);
+        },
+        error: () => {
+          this.error.set('Produto não encontrado.');
+          this.loading.set(false);
+        },
+      });
     });
+  }
+
+  protected selectImage(index: number): void {
+    this.activeImageIndex.set(index);
   }
 
   protected setQuantity(value: string): void {

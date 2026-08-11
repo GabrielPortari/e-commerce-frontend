@@ -4,7 +4,7 @@ import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ProductService } from '../../core/services/product.service';
 import { CategoryService } from '../../core/services/category.service';
 import { ToastService } from '../../core/services/toast.service';
-import { ApiError, Category, Product } from '../../core/models';
+import { ApiError, Category, Product, ProductImage } from '../../core/models';
 import { Skeleton } from '../../shared/components/skeleton/skeleton';
 import { EmptyState } from '../../shared/components/empty-state/empty-state';
 import { Badge } from '../../shared/components/badge/badge';
@@ -29,6 +29,8 @@ export class ProductManagement {
   protected readonly formModalOpen = signal(false);
   protected readonly uploadingImage = signal(false);
   protected readonly saving = signal(false);
+  protected readonly galleryImages = signal<ProductImage[]>([]);
+  protected readonly uploadingGalleryImage = signal(false);
   protected readonly productPendingDeactivate = signal<Product | null>(null);
   protected readonly skeletonItems = Array.from({ length: 4 });
 
@@ -114,6 +116,7 @@ export class ProductManagement {
       discountPrice: 0,
       featured: false,
     });
+    this.galleryImages.set([]);
     this.formModalOpen.set(true);
   }
 
@@ -130,12 +133,46 @@ export class ProductManagement {
       discountPrice: product.discountPrice ?? 0,
       featured: product.featured,
     });
+    this.galleryImages.set(product.images);
     this.formModalOpen.set(true);
   }
 
   protected closeForm(): void {
     this.formModalOpen.set(false);
     this.editingId.set(null);
+  }
+
+  protected onGalleryImageSelected(input: HTMLInputElement): void {
+    const file = input.files?.[0];
+    const productId = this.editingId();
+    if (!file || !productId) {
+      return;
+    }
+
+    this.uploadingGalleryImage.set(true);
+    this.productService.addGalleryImage(productId, file).subscribe({
+      next: (images) => {
+        this.galleryImages.set(images);
+        this.uploadingGalleryImage.set(false);
+        input.value = '';
+      },
+      error: () => {
+        this.toastService.error('Falha ao enviar a imagem.');
+        this.uploadingGalleryImage.set(false);
+      },
+    });
+  }
+
+  protected removeGalleryImage(image: ProductImage): void {
+    const productId = this.editingId();
+    if (!productId) {
+      return;
+    }
+
+    this.productService.deleteGalleryImage(productId, image.id).subscribe({
+      next: (images) => this.galleryImages.set(images),
+      error: () => this.toastService.error('Falha ao remover a imagem.'),
+    });
   }
 
   protected onImageSelected(input: HTMLInputElement): void {
