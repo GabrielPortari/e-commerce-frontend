@@ -3,6 +3,17 @@
     <h1>Produtos</h1>
     <div class="admin-list-header-actions">
       <button type="button" class="btn btn--secondary" (click)="exportCsv()">Exportar CSV</button>
+      <label class="btn btn--secondary">
+        {{ importingCsv() ? 'Importando...' : 'Importar CSV' }}
+        <input
+          type="file"
+          accept=".csv,text/csv"
+          class="sr-only"
+          #importInput
+          [disabled]="importingCsv()"
+          (change)="importCsv(importInput)"
+        />
+      </label>
       <button type="button" class="btn btn--primary" (click)="openCreateForm()">Novo produto</button>
     </div>
   </div>

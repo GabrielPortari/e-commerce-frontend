@@ -1,6 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { firstValueFrom } from 'rxjs';
 import { ProductService } from '../../core/services/product.service';
 import { CategoryService } from '../../core/services/category.service';
 import { ToastService } from '../../core/services/toast.service';
@@ -13,6 +14,72 @@ import { Modal } from '../../shared/components/modal/modal';
 function csvEscape(value: string | number): string {
   const text = String(value);
   return /[";\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+}
+
+function parseCsvLine(line: string): string[] {
+  const fields: string[] = [];
+  let current = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    if (inQuotes) {
+      if (char === '"' && line[i + 1] === '"') {
+        current += '"';
+        i++;
+      } else if (char === '"') {
+        inQuotes = false;
+      } else {
+        current += char;
+      }
+    } else if (char === '"') {
+      inQuotes = true;
+    } else if (char === ';') {
+      fields.push(current);
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  fields.push(current);
+  return fields;
+}
+
+interface ImportRow {
+  name: string;
+  description: string;
+  price: number;
+  stock: number;
+  categoryName: string;
+  onSale: boolean;
+  discountPrice: number | null;
+  featured: boolean;
+}
+
+function parseProductsCsv(text: string): ImportRow[] {
+  const lines = text
+    .split(/\r\n|\n/)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+  if (lines.length === 0) {
+    return [];
+  }
+
+  const [, ...dataLines] = lines;
+  return dataLines.map((line) => {
+    const [, name, description, price, stock, categoryName, , onSale, discountPrice, featured] =
+      parseCsvLine(line);
+    return {
+      name: (name ?? '').trim(),
+      description: (description ?? '').trim(),
+      price: Number((price ?? '0').replace(',', '.')),
+      stock: Number(stock ?? '0'),
+      categoryName: (categoryName ?? '').trim(),
+      onSale: (onSale ?? '').trim().toLowerCase() === 'sim',
+      discountPrice: discountPrice?.trim() ? Number(discountPrice.replace(',', '.')) : null,
+      featured: (featured ?? '').trim().toLowerCase() === 'sim',
+    };
+  });
 }
 
 @Component({
@@ -37,6 +104,7 @@ export class ProductManagement {
   protected readonly galleryImages = signal<ProductImage[]>([]);
   protected readonly uploadingGalleryImage = signal(false);
   protected readonly productPendingDeactivate = signal<Product | null>(null);
+  protected readonly importingCsv = signal(false);
   protected readonly skeletonItems = Array.from({ length: 4 });
 
   protected readonly searchTerm = signal('');
@@ -291,6 +359,75 @@ export class ProductManagement {
     link.download = `produtos-${new Date().toISOString().slice(0, 10)}.csv`;
     link.click();
     URL.revokeObjectURL(url);
+  }
+
+  protected async importCsv(input: HTMLInputElement): Promise<void> {
+    const file = input.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    this.importingCsv.set(true);
+    const rows = parseProductsCsv(await file.text());
+    const categories = this.categories();
+    const existingProducts = this.products();
+
+    let created = 0;
+    let updated = 0;
+    const errors: string[] = [];
+
+    for (const row of rows) {
+      if (!row.name) {
+        continue;
+      }
+      const category = categories.find((c) => c.name.toLowerCase() === row.categoryName.toLowerCase());
+      if (!category) {
+        errors.push(`"${row.name}": categoria "${row.categoryName}" não encontrada`);
+        continue;
+      }
+      if (!(row.price > 0)) {
+        errors.push(`"${row.name}": preço inválido`);
+        continue;
+      }
+
+      const request = {
+        name: row.name,
+        description: row.description,
+        price: row.price,
+        stock: row.stock,
+        categoryId: category.id,
+        imageUrl: null,
+        onSale: row.onSale,
+        discountPrice: row.onSale ? row.discountPrice : null,
+        featured: row.featured,
+      };
+
+      const existing = existingProducts.find((p) => p.name.toLowerCase() === row.name.toLowerCase());
+
+      try {
+        if (existing) {
+          await firstValueFrom(this.productService.update(existing.id, request));
+          updated++;
+        } else {
+          await firstValueFrom(this.productService.create(request));
+          created++;
+        }
+      } catch {
+        errors.push(`"${row.name}": erro ao salvar`);
+      }
+    }
+
+    input.value = '';
+    this.importingCsv.set(false);
+    this.loadProducts();
+
+    if (errors.length > 0) {
+      this.toastService.error(
+        `${created} criados, ${updated} atualizados, ${errors.length} com erro: ${errors.join('; ')}`
+      );
+    } else {
+      this.toastService.success(`${created} produtos criados, ${updated} atualizados.`);
+    }
   }
 
   protected requestDeactivate(product: Product): void {
