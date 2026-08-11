@@ -70,10 +70,10 @@ export class ProductDetail {
 
   constructor() {
     // route.paramMap (não snapshot): links de "produtos relacionados" apontam
-    // pra mesma rota /produtos/:id com outro id, e o Angular reaproveita a
-    // instância do componente — snapshot só lia o id uma vez, na criação.
+    // pra mesma rota /produtos/:slug com outro slug, e o Angular reaproveita a
+    // instância do componente — snapshot só lia o param uma vez, na criação.
     this.route.paramMap.pipe(takeUntilDestroyed()).subscribe((params) => {
-      const id = Number(params.get('id'));
+      const slug = params.get('slug') ?? '';
       this.loading.set(true);
       this.error.set(null);
       this.activeImageIndex.set(0);
@@ -81,12 +81,12 @@ export class ProductDetail {
       this.reviews.set([]);
       this.reviewForm.reset({ authorName: '', rating: 5, comment: '' });
 
-      this.productService.getById(id).subscribe({
+      this.productService.getBySlug(slug).subscribe({
         next: (product) => {
           this.product.set(product);
           this.loading.set(false);
           this.loadRelatedProducts(product);
-          this.loadReviews(id);
+          this.loadReviews(product.id);
         },
         error: () => {
           this.error.set('Produto não encontrado.');

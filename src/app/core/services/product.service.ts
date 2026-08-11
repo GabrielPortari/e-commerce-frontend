@@ -39,8 +39,8 @@ export class ProductService {
     return this.api.get<Product[]>('/admin/products');
   }
 
-  getById(id: number): Observable<Product> {
-    return this.api.get<Product>(`/products/${id}`);
+  getBySlug(slug: string): Observable<Product> {
+    return this.api.get<Product>(`/products/slug/${slug}`);
   }
 
   create(product: ProductRequest): Observable<Product> {
