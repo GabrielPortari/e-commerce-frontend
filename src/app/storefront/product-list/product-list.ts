@@ -8,13 +8,16 @@ import { Category, Product } from '../../core/models';
 import { Skeleton } from '../../shared/components/skeleton/skeleton';
 import { EmptyState } from '../../shared/components/empty-state/empty-state';
 import { ProductCard } from '../../shared/components/product-card/product-card';
+import { Breadcrumbs } from '../../shared/components/breadcrumbs/breadcrumbs';
 
 const PAGE_SIZE = 12;
 const SEARCH_DEBOUNCE_MS = 300;
 
+export type SortOption = 'newest' | 'price-asc' | 'price-desc' | 'name';
+
 @Component({
   selector: 'app-product-list',
-  imports: [Skeleton, EmptyState, ProductCard],
+  imports: [Skeleton, EmptyState, ProductCard, Breadcrumbs],
   templateUrl: './product-list.html',
   styleUrl: './product-list.scss',
 })
@@ -34,10 +37,28 @@ export class ProductList {
   protected readonly currentPage = signal(1);
   protected readonly loading = signal(false);
   protected readonly error = signal<string | null>(null);
+  protected readonly sortBy = signal<SortOption>('newest');
 
   protected readonly selectedCategoryName = computed(
     () => this.categories().find((category) => category.id === this.selectedCategoryId())?.name ?? null
   );
+
+  protected readonly sortedProducts = computed(() => {
+    const products = [...this.products()];
+    switch (this.sortBy()) {
+      case 'price-asc':
+        return products.sort((a, b) => a.price - b.price);
+      case 'price-desc':
+        return products.sort((a, b) => b.price - a.price);
+      case 'name':
+        return products.sort((a, b) => a.name.localeCompare(b.name));
+      case 'newest':
+      default:
+        return products.sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+    }
+  });
 
   protected readonly totalPages = computed(() =>
     Math.max(1, Math.ceil(this.products().length / PAGE_SIZE))
@@ -47,7 +68,7 @@ export class ProductList {
   );
   protected readonly pagedProducts = computed(() => {
     const start = (this.currentPage() - 1) * PAGE_SIZE;
-    return this.products().slice(start, start + PAGE_SIZE);
+    return this.sortedProducts().slice(start, start + PAGE_SIZE);
   });
 
   constructor() {
@@ -83,6 +104,11 @@ export class ProductList {
 
   protected goToPage(page: number): void {
     this.currentPage.set(page);
+  }
+
+  protected onSortChange(value: string): void {
+    this.sortBy.set(value as SortOption);
+    this.currentPage.set(1);
   }
 
   private navigateWithSearch(term: string): void {

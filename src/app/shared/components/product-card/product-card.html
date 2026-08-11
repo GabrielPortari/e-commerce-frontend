@@ -15,4 +15,7 @@
     [onSale]="product().onSale"
     [discountPrice]="product().discountPrice"
   />
+  @if (product().active && product().stock > 0 && product().stock <= 5) {
+    <p class="product-card-low-stock">Últimas {{ product().stock }} unidades!</p>
+  }
 </a>

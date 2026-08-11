@@ -11,6 +11,14 @@
 } @else if (error()) {
   <p class="error">{{ error() }}</p>
 } @else if (product(); as product) {
+  <app-breadcrumbs
+    [items]="[
+      { label: 'Início', link: '/' },
+      { label: product.category.name, link: '/produtos', queryParams: { category: product.category.id } },
+      { label: product.name },
+    ]"
+  />
+
   <section class="product-detail">
     <div class="gallery">
       @if (galleryImages().length > 0) {
@@ -48,6 +56,9 @@
         size="lg"
       />
       <p class="stock">Estoque disponível: {{ product.stock }}</p>
+      @if (isLowStock()) {
+        <p class="low-stock">Últimas {{ product.stock }} unidades!</p>
+      }
 
       <div class="add-to-cart">
         <div class="field quantity-field">
@@ -77,7 +88,19 @@
         >
           Comprar pelo WhatsApp
         </button>
+        <button type="button" class="btn btn--text" (click)="shareProduct()">Compartilhar</button>
       </div>
     </div>
   </section>
+
+  @if (relatedProducts().length > 0) {
+    <section class="related-products">
+      <h2>Produtos relacionados</h2>
+      <app-carousel>
+        @for (related of relatedProducts(); track related.id) {
+          <app-product-card [product]="related" />
+        }
+      </app-carousel>
+    </section>
+  }
 }

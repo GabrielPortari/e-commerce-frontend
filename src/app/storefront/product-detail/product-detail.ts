@@ -8,11 +8,17 @@ import { SettingsService } from '../../core/services/settings.service';
 import { Product } from '../../core/models';
 import { Skeleton } from '../../shared/components/skeleton/skeleton';
 import { ProductPrice } from '../../shared/components/product-price/product-price';
+import { ProductCard } from '../../shared/components/product-card/product-card';
+import { Carousel } from '../../shared/components/carousel/carousel';
+import { Breadcrumbs } from '../../shared/components/breadcrumbs/breadcrumbs';
 import { formatCurrencyBRL } from '../../core/utils/currency';
+
+const LOW_STOCK_THRESHOLD = 5;
+const RELATED_PRODUCTS_LIMIT = 8;
 
 @Component({
   selector: 'app-product-detail',
-  imports: [Skeleton, ProductPrice],
+  imports: [Skeleton, ProductPrice, ProductCard, Carousel, Breadcrumbs],
   templateUrl: './product-detail.html',
   styleUrl: './product-detail.scss',
 })
@@ -29,6 +35,12 @@ export class ProductDetail {
   protected readonly error = signal<string | null>(null);
   protected readonly addingToCart = signal(false);
   protected readonly activeImageIndex = signal(0);
+  protected readonly relatedProducts = signal<Product[]>([]);
+
+  protected readonly isLowStock = computed(() => {
+    const product = this.product();
+    return !!product && product.active && product.stock > 0 && product.stock <= LOW_STOCK_THRESHOLD;
+  });
 
   // Foto de capa (imageUrl) + galeria extra (images) viram uma lista só pro
   // carrossel — do ponto de vista do visitante não existe distinção entre
@@ -51,11 +63,13 @@ export class ProductDetail {
       this.loading.set(true);
       this.error.set(null);
       this.activeImageIndex.set(0);
+      this.relatedProducts.set([]);
 
       this.productService.getById(id).subscribe({
         next: (product) => {
           this.product.set(product);
           this.loading.set(false);
+          this.loadRelatedProducts(product);
         },
         error: () => {
           this.error.set('Produto não encontrado.');
@@ -67,6 +81,34 @@ export class ProductDetail {
 
   protected selectImage(index: number): void {
     this.activeImageIndex.set(index);
+  }
+
+  protected shareProduct(): void {
+    const product = this.product();
+    if (!product) {
+      return;
+    }
+
+    const url = window.location.href;
+    if (navigator.share) {
+      navigator.share({ title: product.name, url }).catch(() => {});
+      return;
+    }
+
+    navigator.clipboard
+      .writeText(url)
+      .then(() => this.toastService.success('Link copiado para a área de transferência.'))
+      .catch(() => this.toastService.error('Não foi possível copiar o link.'));
+  }
+
+  private loadRelatedProducts(product: Product): void {
+    this.productService.getAll({ category: product.category.id }).subscribe({
+      next: (products) => {
+        this.relatedProducts.set(
+          products.filter((related) => related.id !== product.id).slice(0, RELATED_PRODUCTS_LIMIT)
+        );
+      },
+    });
   }
 
   protected setQuantity(value: string): void {

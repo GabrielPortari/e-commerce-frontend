@@ -1,4 +1,8 @@
 <section class="product-list">
+  <app-breadcrumbs
+    [items]="[{ label: 'Início', link: '/' }, { label: selectedCategoryName() ?? 'Produtos' }]"
+  />
+
   <h1>{{ selectedCategoryName() ?? 'Produtos' }}</h1>
 
   <div class="filters">
@@ -25,6 +29,16 @@
             {{ category.name }}
           </option>
         }
+      </select>
+    </div>
+
+    <div class="field">
+      <label class="field-label" for="sort">Ordenar por</label>
+      <select id="sort" (change)="onSortChange($any($event.target).value)">
+        <option value="newest" [selected]="sortBy() === 'newest'">Mais recentes</option>
+        <option value="price-asc" [selected]="sortBy() === 'price-asc'">Menor preço</option>
+        <option value="price-desc" [selected]="sortBy() === 'price-desc'">Maior preço</option>
+        <option value="name" [selected]="sortBy() === 'name'">Nome (A-Z)</option>
       </select>
     </div>
   </div>

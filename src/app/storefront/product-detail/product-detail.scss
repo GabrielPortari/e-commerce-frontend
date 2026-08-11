@@ -81,6 +81,13 @@
     margin: 0 0 var(--space-2);
   }
 
+  .low-stock {
+    color: var(--color-warning);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    margin: 0 0 var(--space-2);
+  }
+
   .add-to-cart {
     display: flex;
     flex-wrap: wrap;
@@ -94,5 +101,13 @@
     input {
       width: 80px;
     }
+  }
+}
+
+.related-products {
+  margin-top: var(--space-7);
+
+  h2 {
+    margin-bottom: var(--space-4);
   }
 }
