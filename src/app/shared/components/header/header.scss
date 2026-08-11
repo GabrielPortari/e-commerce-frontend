@@ -6,6 +6,10 @@
   border-bottom: 1px solid var(--color-border);
 }
 
+// Sem padding lateral: decisão intencional (pedido explícito do usuário) -
+// os ícones de categoria/carrinho ficam colados na borda da viewport, ao
+// contrário de page-content/footer, que têm padding próprio. Não "corrigir"
+// isso adicionando padding de volta aqui.
 .site-header-bar {
   display: flex;
   align-items: center;

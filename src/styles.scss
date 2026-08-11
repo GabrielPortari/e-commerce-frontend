@@ -199,15 +199,12 @@ button:disabled {
   }
 }
 
+// Largura/breakpoint vêm de ".product-grid > *" acima — skeleton é sempre
+// filho direto de .product-grid, não precisa repetir o flex-basis aqui.
 .product-card-skeleton {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  flex: 0 0 200px;
-
-  @media (min-width: 480px) {
-    flex-basis: 220px;
-  }
 }
 
 // Drawer lateral (off-canvas) — reaproveitado no menu de categorias e telas
