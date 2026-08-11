@@ -245,16 +245,14 @@ button:disabled {
   }
 }
 
-// Container — largura máxima de conteúdo com padding lateral responsivo.
+// Container — largura máxima de conteúdo, sem padding lateral (full-bleed:
+// conteúdo vai até a borda da viewport, só limitado pelo max-width em telas
+// muito largas).
 .container {
   width: 100%;
   max-width: var(--container-max);
   margin: 0 auto;
-  padding: 0 var(--space-4);
-
-  @media (min-width: 768px) {
-    padding: 0 var(--space-6);
-  }
+  padding: 0;
 }
 
 input,
