@@ -21,7 +21,11 @@ body {
   // Seções full-bleed "escapam" do padding do container via largura de
   // viewport (100vw) + margem negativa; isso pode gerar um scrollbar
   // horizontal espúrio por arredondamento de subpixel — trava aqui.
-  overflow-x: hidden;
+  // `clip`, não `hidden`: overflow-x != visible força overflow-y a virar
+  // "auto" (regra de interdependência do spec), o que tornaria o body um
+  // scroll container e quebraria os `position: sticky` do header/resumo do
+  // carrinho — `clip` é isento dessa regra.
+  overflow-x: clip;
 }
 
 h1,

@@ -1,16 +1,17 @@
 @use 'mixins' as *;
 
 // Banda full-bleed: escapa do padding do .page-content usando largura de
-// viewport, para que a cor de fundo alcance a borda da tela. Sem cor
-// explícita, herda o --color-bg do body; --surface troca para branco -
-// é assim que a alternância entre seções acontece (por cor, não por
-// espaço/margem, que fica zerado entre elas).
+// viewport, para que a cor de fundo alcance a borda da tela. Alterna entre
+// --color-surface (branco) e o --color-bg do body por :nth-of-type, não por
+// classe fixa por seção — a home tem seções condicionais (@if de promoções/
+// categorias em destaque), e contar por índice real do DOM evita que duas
+// bandas da mesma cor fiquem coladas quando uma seção do meio não renderiza.
 .page-band {
   width: 100vw;
   margin-left: calc(50% - 50vw);
   margin-right: calc(50% - 50vw);
 
-  &--surface {
+  &:nth-of-type(odd) {
     background: var(--color-surface);
   }
 }

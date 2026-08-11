@@ -73,6 +73,10 @@
   align-items: flex-start;
   gap: var(--space-3);
   padding: var(--space-4);
+  // .cart-drawer zera o overflow-y do .drawer-panel base (só
+  // .cart-drawer-items rola) - os estados de vazio/carregando/erro
+  // precisam do próprio scroll pra não cortar em telas muito baixas.
+  overflow-y: auto;
 }
 
 .cart-drawer-items {
