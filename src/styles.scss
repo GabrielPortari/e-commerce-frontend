@@ -245,14 +245,11 @@ button:disabled {
   }
 }
 
-// Container — largura máxima de conteúdo, sem padding lateral (full-bleed:
-// conteúdo vai até a borda da viewport, só limitado pelo max-width em telas
-// muito largas).
+// Container — full-bleed de verdade: sem max-width, sem margem/padding
+// lateral, conteúdo colado na borda da viewport em qualquer largura de
+// tela. Respiro interno fica por conta de cada elemento (card, hero etc.).
 .container {
   width: 100%;
-  max-width: var(--container-max);
-  margin: 0 auto;
-  padding: 0;
 }
 
 input,
