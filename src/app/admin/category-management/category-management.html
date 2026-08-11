@@ -1,44 +1,34 @@
 <section class="category-management">
-  <h1>Categorias</h1>
-
-  <form [formGroup]="createForm" (ngSubmit)="create()" class="create-form">
-    <div class="field create-form-field">
-      <label class="field-label" for="new-category-name">Nova categoria</label>
-      <input id="new-category-name" type="text" formControlName="name" />
-    </div>
-    <button type="submit" class="btn btn--primary">Adicionar</button>
-  </form>
+  <div class="admin-list-header">
+    <h1>Categorias</h1>
+    <button type="button" class="btn btn--primary" (click)="openCreateForm()">Nova categoria</button>
+  </div>
 
   @if (loading()) {
-    <div class="category-rows">
+    <ul class="admin-list">
       @for (_ of skeletonItems; track $index) {
-        <div class="category-row card">
+        <li class="admin-row card">
           <app-skeleton height="1rem" width="50%" />
-        </div>
+        </li>
       }
-    </div>
+    </ul>
   } @else if (categories().length === 0) {
     <app-empty-state title="Nenhuma categoria cadastrada" />
   } @else {
-    <ul class="category-rows">
+    <ul class="admin-list">
       @for (category of categories(); track category.id) {
-        <li class="category-row card">
-          @if (editingId() === category.id) {
-            <form [formGroup]="editForm" (ngSubmit)="saveEdit(category.id)" class="edit-form">
-              <input type="text" formControlName="name" />
-              <div class="edit-form-actions">
-                <button type="submit" class="btn btn--primary btn--sm">Salvar</button>
-                <button type="button" class="btn btn--secondary btn--sm" (click)="cancelEdit()">
-                  Cancelar
-                </button>
-              </div>
-            </form>
-          } @else {
-            <span class="category-name">{{ category.name }}</span>
-            <div class="category-actions">
-              <button type="button" class="btn btn--secondary btn--sm" (click)="startEdit(category)">
-                Editar
-              </button>
+        <li class="admin-row card">
+          <span class="admin-row-title">{{ category.name }}</span>
+          <div class="admin-row-meta">
+            @if (category.isDefault) {
+              <app-badge tone="neutral">Padrão</app-badge>
+            }
+          </div>
+          <div class="admin-row-actions">
+            <button type="button" class="btn btn--secondary btn--sm" (click)="startEdit(category)">
+              Editar
+            </button>
+            @if (!category.isDefault) {
               <button
                 type="button"
                 class="btn btn--danger btn--sm"
@@ -46,13 +36,33 @@
               >
                 Remover
               </button>
-            </div>
-          }
+            }
+          </div>
         </li>
       }
     </ul>
   }
 </section>
+
+<app-modal
+  [open]="formModalOpen()"
+  [titleText]="editingId() ? 'Editar categoria' : 'Nova categoria'"
+  (closed)="closeForm()"
+>
+  <form [formGroup]="form" (ngSubmit)="submit()" class="category-form">
+    <div class="field">
+      <label class="field-label" for="category-name">Nome</label>
+      <input id="category-name" type="text" formControlName="name" />
+    </div>
+
+    <div class="modal-actions">
+      <button type="button" class="btn btn--secondary" (click)="closeForm()">Cancelar</button>
+      <button type="submit" class="btn btn--primary" [disabled]="saving()">
+        {{ saving() ? 'Salvando...' : editingId() ? 'Salvar alterações' : 'Criar categoria' }}
+      </button>
+    </div>
+  </form>
+</app-modal>
 
 <app-modal
   [open]="categoryPendingDelete() !== null"
@@ -62,7 +72,8 @@
   @if (categoryPendingDelete(); as category) {
     <p>Tem certeza que deseja remover a categoria "{{ category.name }}"?</p>
     <p class="modal-hint">
-      Não será possível remover categorias que ainda têm produtos vinculados.
+      Produtos vinculados a esta categoria serão movidos automaticamente para a categoria
+      "Geral".
     </p>
     <div class="modal-actions">
       <button type="button" class="btn btn--secondary" (click)="cancelDelete()">Cancelar</button>

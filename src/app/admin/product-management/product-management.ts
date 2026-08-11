@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ProductService } from '../../core/services/product.service';
@@ -26,10 +26,37 @@ export class ProductManagement {
   protected readonly categories = signal<Category[]>([]);
   protected readonly loading = signal(true);
   protected readonly editingId = signal<number | null>(null);
+  protected readonly formModalOpen = signal(false);
   protected readonly uploadingImage = signal(false);
   protected readonly saving = signal(false);
   protected readonly productPendingDeactivate = signal<Product | null>(null);
   protected readonly skeletonItems = Array.from({ length: 4 });
+
+  protected readonly searchTerm = signal('');
+  protected readonly statusFilter = signal<'all' | 'active' | 'inactive'>('all');
+  protected readonly categoryFilter = signal<number | null>(null);
+
+  protected readonly filteredProducts = computed(() => {
+    const term = this.searchTerm().trim().toLowerCase();
+    const status = this.statusFilter();
+    const categoryId = this.categoryFilter();
+
+    return this.products().filter((product) => {
+      if (term && !product.name.toLowerCase().includes(term)) {
+        return false;
+      }
+      if (status === 'active' && !product.active) {
+        return false;
+      }
+      if (status === 'inactive' && product.active) {
+        return false;
+      }
+      if (categoryId !== null && product.category.id !== categoryId) {
+        return false;
+      }
+      return true;
+    });
+  });
 
   protected readonly form = this.fb.nonNullable.group({
     name: ['', Validators.required],
@@ -40,6 +67,7 @@ export class ProductManagement {
     imageUrl: [''],
     onSale: [false],
     discountPrice: [0],
+    featured: [false],
   });
 
   constructor() {
@@ -61,6 +89,34 @@ export class ProductManagement {
     });
   }
 
+  protected onSearchInput(term: string): void {
+    this.searchTerm.set(term);
+  }
+
+  protected onStatusFilterChange(status: string): void {
+    this.statusFilter.set(status as 'all' | 'active' | 'inactive');
+  }
+
+  protected onCategoryFilterChange(categoryId: string): void {
+    this.categoryFilter.set(categoryId ? Number(categoryId) : null);
+  }
+
+  protected openCreateForm(): void {
+    this.editingId.set(null);
+    this.form.reset({
+      name: '',
+      description: '',
+      price: 0,
+      stock: 0,
+      categoryId: 0,
+      imageUrl: '',
+      onSale: false,
+      discountPrice: 0,
+      featured: false,
+    });
+    this.formModalOpen.set(true);
+  }
+
   protected startEdit(product: Product): void {
     this.editingId.set(product.id);
     this.form.setValue({
@@ -72,21 +128,14 @@ export class ProductManagement {
       imageUrl: product.imageUrl ?? '',
       onSale: product.onSale,
       discountPrice: product.discountPrice ?? 0,
+      featured: product.featured,
     });
+    this.formModalOpen.set(true);
   }
 
-  protected cancelEdit(): void {
+  protected closeForm(): void {
+    this.formModalOpen.set(false);
     this.editingId.set(null);
-    this.form.reset({
-      name: '',
-      description: '',
-      price: 0,
-      stock: 0,
-      categoryId: 0,
-      imageUrl: '',
-      onSale: false,
-      discountPrice: 0,
-    });
   }
 
   protected onImageSelected(input: HTMLInputElement): void {
@@ -130,6 +179,7 @@ export class ProductManagement {
       imageUrl: value.imageUrl || null,
       onSale: value.onSale,
       discountPrice: value.onSale ? value.discountPrice : null,
+      featured: value.featured,
     };
 
     this.saving.set(true);
@@ -142,12 +192,25 @@ export class ProductManagement {
     request$.subscribe({
       next: () => {
         this.saving.set(false);
-        this.cancelEdit();
+        this.closeForm();
         this.loadProducts();
+        this.toastService.success(editingId ? 'Produto atualizado.' : 'Produto criado.');
       },
       error: (err: { error?: ApiError }) => {
         this.toastService.error(err.error?.message ?? 'Erro ao salvar produto.');
         this.saving.set(false);
+      },
+    });
+  }
+
+  protected reactivate(product: Product): void {
+    this.productService.reactivate(product.id).subscribe({
+      next: () => {
+        this.loadProducts();
+        this.toastService.success(`"${product.name}" reativado.`);
+      },
+      error: (err: { error?: ApiError }) => {
+        this.toastService.error(err.error?.message ?? 'Erro ao reativar produto.');
       },
     });
   }

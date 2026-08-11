@@ -58,6 +58,34 @@
   </div>
 </section>
 
+@if (loading() || hasFeaturedProducts()) {
+  <section class="page-band">
+    <div class="page-band-inner">
+      <div class="home-section-header">
+        <h2>Destaques</h2>
+      </div>
+
+      @if (loading()) {
+        <app-carousel>
+          @for (_ of skeletonItems; track $index) {
+            <div class="product-card-skeleton">
+              <app-skeleton height="180px" />
+              <app-skeleton height="1rem" width="70%" />
+              <app-skeleton height="1rem" width="40%" />
+            </div>
+          }
+        </app-carousel>
+      } @else {
+        <app-carousel>
+          @for (product of featuredProducts(); track product.id) {
+            <app-product-card [product]="product" />
+          }
+        </app-carousel>
+      }
+    </div>
+  </section>
+}
+
 @if (loading() || hasPromotions()) {
   <section class="page-band">
     <div class="page-band-inner">

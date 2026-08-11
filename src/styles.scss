@@ -179,6 +179,118 @@ button:disabled {
   padding: var(--space-4);
 }
 
+// Barra de filtros (busca/select) acima de uma listagem — usada no catálogo
+// público (/produtos) e nas listagens do admin.
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+
+  .field {
+    margin-bottom: 0;
+  }
+
+  select {
+    width: auto;
+    min-width: 160px;
+  }
+}
+
+.product-search input {
+  min-width: 220px;
+}
+
+// Admin — cabeçalho de lista (título + ação "novo") e linhas de listagem
+// padronizadas, reaproveitadas em produtos/categorias (e qualquer CRUD
+// futuro do admin), pra todas as telas terem a mesma cara.
+.admin-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-5);
+
+  h1 {
+    margin: 0;
+  }
+}
+
+.admin-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+// Flexbox em vez de grid de colunas fixas: o número de "detalhes"/badges
+// varia por linha (produto pode ter até 3 badges, categoria nenhum), então
+// title/meta/actions viram só 3 itens flex — cada um cresce internamente
+// sem depender de quantas colunas o conteúdo específico preenche.
+.admin-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+
+  @include from(lg) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+}
+
+.admin-row-title {
+  font-weight: var(--weight-medium);
+}
+
+.admin-row-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--color-ink-muted);
+}
+
+.admin-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+// Reaproveitado pelos modais de confirmação/formulário do admin.
+.modal-hint {
+  color: var(--color-ink-muted);
+  font-size: var(--text-sm);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+// Botão de ícone quadrado (36x36) sem fundo — usado nos toggles do header
+// (categorias, tema, carrinho) e no shell de admin (nav, tema).
+.icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: none;
+  color: var(--color-ink);
+  padding: 0;
+  margin: 0;
+}
+
 // Botão circular de navegação — usado no carrossel de produtos
 // (shared/components/carousel) e no carrossel do hero (home.scss).
 .carousel-nav {

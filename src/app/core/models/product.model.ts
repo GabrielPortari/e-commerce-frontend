@@ -11,5 +11,6 @@ export interface Product {
   active: boolean;
   onSale: boolean;
   discountPrice: number | null;
+  featured: boolean;
   createdAt: string;
 }

@@ -33,21 +33,8 @@
   gap: var(--space-1);
 }
 
-.category-toggle,
-.theme-toggle,
-.cart-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  background: transparent;
-  border: none;
-  color: var(--color-ink);
-  padding: 0;
-  margin: 0;
-}
-
+// Visual em si é a classe global .icon-btn (styles.scss) — aqui só o que é
+// específico deste header.
 .cart-toggle {
   position: relative;
 }

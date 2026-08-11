@@ -1,0 +1,43 @@
+<section class="dashboard">
+  <h1>Painel</h1>
+
+  @if (loading()) {
+    <div class="stat-grid">
+      @for (_ of [1, 2, 3, 4, 5]; track $index) {
+        <div class="stat-tile card">
+          <app-skeleton height="2rem" width="50%" />
+          <app-skeleton height="1rem" width="80%" />
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="stat-grid">
+      <div class="stat-tile card">
+        <p class="stat-value">{{ activeCount() }}</p>
+        <p class="stat-label">Produtos ativos</p>
+      </div>
+      <div class="stat-tile card">
+        <p class="stat-value">{{ outOfStockCount() }}</p>
+        <p class="stat-label">Sem estoque</p>
+      </div>
+      <div class="stat-tile card">
+        <p class="stat-value">{{ onSaleCount() }}</p>
+        <p class="stat-label">Em promoção</p>
+      </div>
+      <div class="stat-tile card">
+        <p class="stat-value">{{ featuredCount() }}</p>
+        <p class="stat-label">Em destaque</p>
+      </div>
+      <div class="stat-tile card">
+        <p class="stat-value">{{ categories().length }}</p>
+        <p class="stat-label">Categorias</p>
+      </div>
+    </div>
+  }
+
+  <div class="quick-links">
+    <a routerLink="/admin/produtos" class="btn btn--secondary">Produtos</a>
+    <a routerLink="/admin/categorias" class="btn btn--secondary">Categorias</a>
+    <a routerLink="/admin/configuracoes" class="btn btn--secondary">Configurações</a>
+  </div>
+</section>

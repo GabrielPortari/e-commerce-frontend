@@ -4,22 +4,21 @@ import { RouterLink } from '@angular/router';
 import { CartService } from '../../../core/services/cart.service';
 import { CategoryService } from '../../../core/services/category.service';
 import { SettingsService } from '../../../core/services/settings.service';
-import { ThemeService } from '../../../core/services/theme.service';
 import { WhatsappCheckoutService } from '../../../core/services/whatsapp-checkout.service';
 import { Category } from '../../../core/models';
+import { ThemeToggle } from '../theme-toggle/theme-toggle';
 
 type DrawerId = 'category' | 'cart' | null;
 
 @Component({
   selector: 'app-header',
-  imports: [RouterLink, CurrencyPipe],
+  imports: [RouterLink, CurrencyPipe, ThemeToggle],
   templateUrl: './header.html',
   styleUrl: './header.scss',
 })
 export class Header {
   protected readonly cartService = inject(CartService);
   protected readonly settingsService = inject(SettingsService);
-  protected readonly themeService = inject(ThemeService);
   private readonly categoryService = inject(CategoryService);
   private readonly whatsappCheckoutService = inject(WhatsappCheckoutService);
 

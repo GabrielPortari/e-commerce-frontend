@@ -8,6 +8,7 @@ import { Skeleton } from '../../shared/components/skeleton/skeleton';
 
 const PROMOTIONS_LIMIT = 4;
 const NEW_ARRIVALS_LIMIT = 8;
+const FEATURED_PRODUCTS_LIMIT = 8;
 const FEATURED_CATEGORIES_LIMIT = 3;
 const HERO_AUTOPLAY_MS = 6000;
 
@@ -72,6 +73,12 @@ export class Home {
       .slice(0, PROMOTIONS_LIMIT)
   );
   protected readonly hasPromotions = computed(() => this.promotions().length > 0);
+  protected readonly featuredProducts = computed(() =>
+    this.allProducts()
+      .filter((product) => product.featured)
+      .slice(0, FEATURED_PRODUCTS_LIMIT)
+  );
+  protected readonly hasFeaturedProducts = computed(() => this.featuredProducts().length > 0);
   protected readonly newArrivals = computed(() =>
     this.sortByNewest(this.allProducts()).slice(0, NEW_ARRIVALS_LIMIT)
   );

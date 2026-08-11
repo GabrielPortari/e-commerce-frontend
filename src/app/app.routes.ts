@@ -27,21 +27,30 @@ export const routes: Routes = [
     loadComponent: () => import('./admin/login/login').then((m) => m.Login)
   },
   {
-    path: 'admin/produtos',
+    path: 'admin',
     canActivate: [authGuard],
-    loadComponent: () =>
-      import('./admin/product-management/product-management').then((m) => m.ProductManagement)
-  },
-  {
-    path: 'admin/categorias',
-    canActivate: [authGuard],
-    loadComponent: () =>
-      import('./admin/category-management/category-management').then((m) => m.CategoryManagement)
-  },
-  {
-    path: 'admin/configuracoes',
-    canActivate: [authGuard],
-    loadComponent: () => import('./admin/settings/settings').then((m) => m.SettingsPage)
+    loadComponent: () => import('./admin/admin-layout/admin-layout').then((m) => m.AdminLayout),
+    children: [
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      {
+        path: 'dashboard',
+        loadComponent: () => import('./admin/dashboard/dashboard').then((m) => m.Dashboard)
+      },
+      {
+        path: 'produtos',
+        loadComponent: () =>
+          import('./admin/product-management/product-management').then((m) => m.ProductManagement)
+      },
+      {
+        path: 'categorias',
+        loadComponent: () =>
+          import('./admin/category-management/category-management').then((m) => m.CategoryManagement)
+      },
+      {
+        path: 'configuracoes',
+        loadComponent: () => import('./admin/settings/settings').then((m) => m.SettingsPage)
+      }
+    ]
   },
   {
     path: '**',

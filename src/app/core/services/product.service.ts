@@ -8,6 +8,7 @@ export interface ProductFilters {
   category?: number;
   name?: string;
   onSale?: boolean;
+  featured?: boolean;
 }
 
 export interface ProductRequest {
@@ -19,6 +20,7 @@ export interface ProductRequest {
   categoryId: number;
   onSale: boolean;
   discountPrice: number | null;
+  featured: boolean;
 }
 
 export interface ImageUploadResponse {
@@ -51,6 +53,10 @@ export class ProductService {
 
   delete(id: number): Observable<void> {
     return this.api.delete<void>(`/products/${id}`);
+  }
+
+  reactivate(id: number): Observable<Product> {
+    return this.api.put<Product>(`/products/${id}/reactivate`, null);
   }
 
   uploadImage(file: File): Observable<ImageUploadResponse> {

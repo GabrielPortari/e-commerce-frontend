@@ -1,11 +1,43 @@
-.filters {
+h1 {
+  margin-bottom: var(--space-4);
+}
+
+// Catálogo completo: grid que quebra linha (padrão de loja), diferente do
+// .product-grid global (scroll horizontal sem quebra) usado nas seções
+// compactas da home/promoções — aqui o objetivo é mostrar o catálogo
+// inteiro, não uma vitrine limitada.
+.catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-4);
+}
+
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-5);
+}
+
+.pagination-page {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  margin-bottom: var(--space-5);
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-ink);
 
-  select {
-    width: auto;
-    min-width: 160px;
+  &:hover {
+    border-color: var(--color-ink);
+  }
+
+  &.is-active {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: var(--color-accent-ink);
   }
 }
