@@ -66,7 +66,14 @@
           <button type="button" class="btn btn--secondary btn--sm" (click)="clearCart()">
             Limpar carrinho
           </button>
-          <a class="btn btn--primary" routerLink="/checkout">Finalizar compra</a>
+          <button
+            type="button"
+            class="btn btn--primary"
+            [disabled]="!settingsService.loaded()"
+            (click)="buyOnWhatsapp()"
+          >
+            Comprar pelo WhatsApp
+          </button>
         </div>
       </div>
     </div>

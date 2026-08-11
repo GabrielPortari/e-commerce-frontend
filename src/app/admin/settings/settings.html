@@ -1,0 +1,23 @@
+<section class="settings-page">
+  <h1>Configurações</h1>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="settings-form card">
+    <h2>WhatsApp</h2>
+    <p class="field-hint">
+      Número usado no botão "Comprar pelo WhatsApp" da loja. Apenas dígitos, com DDI e DDD
+      (ex: 5511999999999).
+    </p>
+
+    <div class="field">
+      <label class="field-label" for="whatsappNumber">Número do WhatsApp</label>
+      <input id="whatsappNumber" type="text" formControlName="whatsappNumber" placeholder="5511999999999" />
+      @if (form.controls.whatsappNumber.invalid && form.controls.whatsappNumber.touched) {
+        <span class="field-error">Informe apenas dígitos, com DDI e DDD (10 a 15 números).</span>
+      }
+    </div>
+
+    <button type="submit" class="btn btn--primary" [disabled]="saving()">
+      {{ saving() ? 'Salvando...' : 'Salvar' }}
+    </button>
+  </form>
+</section>
