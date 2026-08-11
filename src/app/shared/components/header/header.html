@@ -18,7 +18,14 @@
 
     <a class="brand" routerLink="/">E-commerce</a>
 
-    <a class="cart-toggle" routerLink="/carrinho" aria-label="Carrinho">
+    <button
+      type="button"
+      class="cart-toggle"
+      [attr.aria-expanded]="cartMenuOpen()"
+      aria-controls="cart-drawer"
+      [attr.aria-label]="cartMenuOpen() ? 'Fechar carrinho' : 'Abrir carrinho'"
+      (click)="toggleCartMenu()"
+    >
       <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
         <path
           fill="currentColor"
@@ -28,7 +35,7 @@
       @if (cartService.itemCount() > 0) {
         <span class="cart-count">{{ cartService.itemCount() }}</span>
       }
-    </a>
+    </button>
   </div>
 </header>
 
@@ -59,5 +66,64 @@
         }
       </ul>
     </nav>
+  </div>
+}
+
+@if (cartMenuOpen()) {
+  <div class="drawer-backdrop" (click)="closeCartMenu()">
+    <aside
+      id="cart-drawer"
+      class="drawer-panel cart-drawer"
+      aria-label="Carrinho"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="drawer-header">
+        <h2>Carrinho</h2>
+        <button type="button" class="drawer-close" aria-label="Fechar carrinho" (click)="closeCartMenu()">
+          &times;
+        </button>
+      </div>
+
+      @if (cartService.loading()) {
+        <div class="cart-drawer-empty">
+          <p>Carregando carrinho...</p>
+        </div>
+      } @else if (cartService.error()) {
+        <div class="cart-drawer-empty">
+          <p class="error">{{ cartService.error() }}</p>
+        </div>
+      } @else if (!cartService.cart() || cartService.cart()!.items.length === 0) {
+        <div class="cart-drawer-empty">
+          <p>Seu carrinho está vazio.</p>
+          <a class="btn btn--secondary btn--sm" routerLink="/produtos" (click)="closeCartMenu()">
+            Ver produtos
+          </a>
+        </div>
+      } @else {
+        <ul class="cart-drawer-items">
+          @for (item of cartService.cart()!.items; track item.id) {
+            <li>
+              <span class="cart-drawer-item-name">{{ item.productName }} &times; {{ item.quantity }}</span>
+              <span class="cart-drawer-item-subtotal">{{ item.subtotal | currency: 'BRL' }}</span>
+            </li>
+          }
+        </ul>
+
+        <div class="cart-drawer-footer">
+          <p class="cart-drawer-total">Total: {{ cartService.cart()!.total | currency: 'BRL' }}</p>
+          <a class="btn btn--secondary btn--block" routerLink="/carrinho" (click)="closeCartMenu()">
+            Ver carrinho completo
+          </a>
+          <button
+            type="button"
+            class="btn btn--primary btn--block"
+            [disabled]="!settingsService.loaded()"
+            (click)="buyOnWhatsapp()"
+          >
+            Concluir compra pelo WhatsApp
+          </button>
+        </div>
+      }
+    </aside>
   </div>
 }

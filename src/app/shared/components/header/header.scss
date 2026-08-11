@@ -6,6 +6,10 @@
   border-bottom: 1px solid var(--color-border);
 }
 
+// Sem padding lateral: decisão intencional (pedido explícito do usuário) -
+// os ícones de categoria/carrinho ficam colados na borda da viewport, ao
+// contrário de page-content/footer, que têm padding próprio. Não "corrigir"
+// isso adicionando padding de volta aqui.
 .site-header-bar {
   display: flex;
   align-items: center;
@@ -57,6 +61,61 @@
     text-decoration: none;
     background: var(--color-bg);
   }
+}
+
+.cart-drawer {
+  left: auto;
+  right: 0;
+  // .drawer-panel (global) já é overflow-y:auto; aqui o scroll fica só
+  // em .cart-drawer-items, pra header/footer do drawer ficarem fixos.
+  overflow-y: hidden;
+}
+
+.cart-drawer-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  // .cart-drawer zera o overflow-y do .drawer-panel base (só
+  // .cart-drawer-items rola) - os estados de vazio/carregando/erro
+  // precisam do próprio scroll pra não cortar em telas muito baixas.
+  overflow-y: auto;
+}
+
+.cart-drawer-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+  overflow-y: auto;
+
+  li {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+    font-size: var(--text-sm);
+  }
+}
+
+.cart-drawer-item-subtotal {
+  font-weight: var(--weight-medium);
+  white-space: nowrap;
+}
+
+.cart-drawer-footer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.cart-drawer-total {
+  margin: 0 0 var(--space-1);
+  font-weight: var(--weight-semibold);
 }
 
 .cart-count {

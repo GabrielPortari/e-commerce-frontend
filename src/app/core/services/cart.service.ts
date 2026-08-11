@@ -55,6 +55,11 @@ export class CartService {
   }
 
   private syncCart(source: Observable<Cart>): Observable<Cart> {
-    return source.pipe(tap((cart) => this._cart.set(cart)));
+    return source.pipe(
+      tap((cart) => {
+        this._cart.set(cart);
+        this._error.set(null);
+      })
+    );
   }
 }

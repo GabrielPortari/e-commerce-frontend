@@ -6,7 +6,12 @@
   align-items: flex-end;
   justify-content: center;
   padding: 0;
-  z-index: 100;
+  // Acima de toast (200) e drawer (210, styles.scss): modal é usado pra
+  // confirmar acoes destrutivas e o Header (com os drawers de categoria/
+  // carrinho) renderiza globalmente, inclusive nas telas de admin que usam
+  // modal - precisa ficar por cima de tudo, nunca escondido atras de um
+  // drawer aberto por engano.
+  z-index: 220;
 
   @media (min-width: 768px) {
     align-items: center;
