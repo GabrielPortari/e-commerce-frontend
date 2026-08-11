@@ -1,6 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
+import { Title } from '@angular/platform-browser';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ProductService } from '../../core/services/product.service';
 import { CartService } from '../../core/services/cart.service';
@@ -27,6 +28,7 @@ const RELATED_PRODUCTS_LIMIT = 8;
 })
 export class ProductDetail {
   private readonly route = inject(ActivatedRoute);
+  private readonly titleService = inject(Title);
   private readonly fb = inject(FormBuilder);
   private readonly productService = inject(ProductService);
   private readonly cartService = inject(CartService);
@@ -85,12 +87,14 @@ export class ProductDetail {
         next: (product) => {
           this.product.set(product);
           this.loading.set(false);
+          this.titleService.setTitle(`${product.name} | E-commerce`);
           this.loadRelatedProducts(product);
           this.loadReviews(product.id);
         },
         error: () => {
           this.error.set('Produto não encontrado.');
           this.loading.set(false);
+          this.titleService.setTitle('Produto não encontrado | E-commerce');
         },
       });
     });
