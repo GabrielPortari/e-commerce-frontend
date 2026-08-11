@@ -3,9 +3,11 @@ import { ActivatedRoute } from '@angular/router';
 import { ProductService } from '../../core/services/product.service';
 import { CartService } from '../../core/services/cart.service';
 import { ToastService } from '../../core/services/toast.service';
+import { SettingsService } from '../../core/services/settings.service';
 import { Product } from '../../core/models';
 import { Skeleton } from '../../shared/components/skeleton/skeleton';
 import { ProductPrice } from '../../shared/components/product-price/product-price';
+import { formatCurrencyBRL } from '../../core/utils/currency';
 
 @Component({
   selector: 'app-product-detail',
@@ -18,6 +20,7 @@ export class ProductDetail {
   private readonly productService = inject(ProductService);
   private readonly cartService = inject(CartService);
   private readonly toastService = inject(ToastService);
+  protected readonly settingsService = inject(SettingsService);
 
   protected readonly product = signal<Product | null>(null);
   protected readonly quantity = signal(1);
@@ -63,5 +66,30 @@ export class ProductDetail {
         this.toastService.error('Não foi possível adicionar o produto ao carrinho.');
       },
     });
+  }
+
+  protected buyOnWhatsapp(): void {
+    const product = this.product();
+    if (!product) {
+      return;
+    }
+
+    const unitPrice = product.onSale && product.discountPrice !== null ? product.discountPrice : product.price;
+    const quantity = this.quantity();
+    const message = [
+      'Olá! Tenho interesse neste produto:',
+      '',
+      `${product.name} (x${quantity})`,
+      `Preço unitário: ${formatCurrencyBRL(unitPrice)}`,
+      `Total: ${formatCurrencyBRL(unitPrice * quantity)}`,
+    ].join('\n');
+
+    const link = this.settingsService.buildWhatsappLink(message);
+    if (!link) {
+      this.toastService.error('Número do WhatsApp da loja ainda não foi configurado.');
+      return;
+    }
+
+    window.open(link, '_blank', 'noopener');
   }
 }
