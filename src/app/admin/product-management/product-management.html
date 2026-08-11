@@ -131,7 +131,7 @@
   @if (productPendingDeactivate(); as product) {
     <p>Tem certeza que deseja desativar "{{ product.name }}"?</p>
     <p class="modal-hint">
-      O produto deixa de aparecer na vitrine, mas continua no histórico de pedidos antigos.
+      O produto deixa de aparecer na vitrine, mas continua no banco de dados.
     </p>
     <div class="modal-actions">
       <button type="button" class="btn btn--secondary" (click)="cancelDeactivate()">Cancelar</button>

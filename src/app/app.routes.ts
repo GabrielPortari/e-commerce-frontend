@@ -39,11 +39,6 @@ export const routes: Routes = [
       import('./admin/category-management/category-management').then((m) => m.CategoryManagement)
   },
   {
-    path: 'admin/pedidos',
-    canActivate: [authGuard],
-    loadComponent: () => import('./admin/order-list/order-list').then((m) => m.OrderList)
-  },
-  {
     path: 'admin/configuracoes',
     canActivate: [authGuard],
     loadComponent: () => import('./admin/settings/settings').then((m) => m.SettingsPage)

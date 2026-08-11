@@ -33,7 +33,7 @@ export class Login {
     this.error.set(null);
 
     this.authService.login(this.form.getRawValue()).subscribe({
-      next: () => this.router.navigate(['/admin/pedidos']),
+      next: () => this.router.navigate(['/admin/produtos']),
       error: (err: { error?: ApiError }) => {
         this.error.set(err.error?.message ?? 'Credenciais inválidas.');
         this.submitting.set(false);
