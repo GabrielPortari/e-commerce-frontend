@@ -1,5 +1,8 @@
 .page-content {
   min-height: calc(100vh - 8rem);
-  padding-top: var(--space-6);
-  padding-bottom: var(--space-6);
+  padding: var(--space-6) var(--space-4);
+
+  @media (min-width: 768px) {
+    padding: var(--space-6) var(--space-6);
+  }
 }
