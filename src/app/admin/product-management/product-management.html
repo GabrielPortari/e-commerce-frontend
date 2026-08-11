@@ -1,7 +1,10 @@
 <section class="product-management">
   <div class="admin-list-header">
     <h1>Produtos</h1>
-    <button type="button" class="btn btn--primary" (click)="openCreateForm()">Novo produto</button>
+    <div class="admin-list-header-actions">
+      <button type="button" class="btn btn--secondary" (click)="exportCsv()">Exportar CSV</button>
+      <button type="button" class="btn btn--primary" (click)="openCreateForm()">Novo produto</button>
+    </div>
   </div>
 
   <div class="filters">

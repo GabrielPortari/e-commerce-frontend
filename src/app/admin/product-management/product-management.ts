@@ -10,6 +10,11 @@ import { EmptyState } from '../../shared/components/empty-state/empty-state';
 import { Badge } from '../../shared/components/badge/badge';
 import { Modal } from '../../shared/components/modal/modal';
 
+function csvEscape(value: string | number): string {
+  const text = String(value);
+  return /[";\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+}
+
 @Component({
   selector: 'app-product-management',
   imports: [ReactiveFormsModule, CurrencyPipe, Skeleton, EmptyState, Badge, Modal],
@@ -250,6 +255,42 @@ export class ProductManagement {
         this.toastService.error(err.error?.message ?? 'Erro ao reativar produto.');
       },
     });
+  }
+
+  protected exportCsv(): void {
+    const header = [
+      'id',
+      'nome',
+      'descricao',
+      'preco',
+      'estoque',
+      'categoria',
+      'ativo',
+      'emPromocao',
+      'precoPromocional',
+      'destaque',
+    ];
+    const rows = this.filteredProducts().map((product) => [
+      product.id,
+      product.name,
+      product.description ?? '',
+      product.price,
+      product.stock,
+      product.category.name,
+      product.active ? 'sim' : 'não',
+      product.onSale ? 'sim' : 'não',
+      product.discountPrice ?? '',
+      product.featured ? 'sim' : 'não',
+    ]);
+
+    const csv = [header, ...rows].map((row) => row.map(csvEscape).join(';')).join('\r\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `produtos-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
   }
 
   protected requestDeactivate(product: Product): void {
