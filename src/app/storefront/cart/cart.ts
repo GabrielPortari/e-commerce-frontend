@@ -18,7 +18,7 @@ import { formatCurrencyBRL } from '../../core/utils/currency';
 export class Cart {
   protected readonly cartService = inject(CartService);
   private readonly toastService = inject(ToastService);
-  private readonly settingsService = inject(SettingsService);
+  protected readonly settingsService = inject(SettingsService);
   protected readonly skeletonItems = Array.from({ length: 3 });
 
   protected updateQuantity(itemId: number, value: string): void {
@@ -60,12 +60,8 @@ export class Cart {
       `Total: ${formatCurrencyBRL(cart.total)}`,
     ].join('\n');
 
-    const link = this.settingsService.buildWhatsappLink(message);
-    if (!link) {
+    if (!this.settingsService.openWhatsapp(message)) {
       this.toastService.error('Número do WhatsApp da loja ainda não foi configurado.');
-      return;
     }
-
-    window.open(link, '_blank', 'noopener');
   }
 }

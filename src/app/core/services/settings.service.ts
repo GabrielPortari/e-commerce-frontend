@@ -10,9 +10,16 @@ export class SettingsService {
   private readonly _whatsappNumber = signal<string | null>(null);
   readonly whatsappNumber = this._whatsappNumber.asReadonly();
 
+  private readonly _loaded = signal(false);
+  readonly loaded = this._loaded.asReadonly();
+
   constructor() {
     this.api.get<Settings>('/settings').subscribe({
-      next: (settings) => this._whatsappNumber.set(settings.whatsappNumber),
+      next: (settings) => {
+        this._whatsappNumber.set(settings.whatsappNumber);
+        this._loaded.set(true);
+      },
+      error: () => this._loaded.set(true),
     });
   }
 
@@ -22,11 +29,14 @@ export class SettingsService {
       .pipe(tap((settings) => this._whatsappNumber.set(settings.whatsappNumber)));
   }
 
-  buildWhatsappLink(message: string): string | null {
+  /** Abre o WhatsApp com a mensagem informada; retorna false se o número ainda não estiver configurado. */
+  openWhatsapp(message: string): boolean {
     const number = this._whatsappNumber();
     if (!number) {
-      return null;
+      return false;
     }
-    return `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
+    const link = `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
+    window.open(link, '_blank', 'noopener');
+    return true;
   }
 }

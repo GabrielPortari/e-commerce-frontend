@@ -44,8 +44,9 @@ export class ProductDetail {
 
   protected setQuantity(value: string): void {
     const parsed = Number(value);
+    const stock = this.product()?.stock ?? Infinity;
     if (parsed >= 1) {
-      this.quantity.set(parsed);
+      this.quantity.set(Math.min(parsed, stock));
     }
   }
 
@@ -84,12 +85,8 @@ export class ProductDetail {
       `Total: ${formatCurrencyBRL(unitPrice * quantity)}`,
     ].join('\n');
 
-    const link = this.settingsService.buildWhatsappLink(message);
-    if (!link) {
+    if (!this.settingsService.openWhatsapp(message)) {
       this.toastService.error('Número do WhatsApp da loja ainda não foi configurado.');
-      return;
     }
-
-    window.open(link, '_blank', 'noopener');
   }
 }

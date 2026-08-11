@@ -54,7 +54,7 @@
         <button
           type="button"
           class="btn btn--primary"
-          [disabled]="product.stock === 0"
+          [disabled]="product.stock === 0 || !settingsService.loaded()"
           (click)="buyOnWhatsapp()"
         >
           Comprar pelo WhatsApp
