@@ -7,7 +7,7 @@ import { SettingsService } from '../../core/services/settings.service';
 import { ApiError } from '../../core/models';
 import { Skeleton } from '../../shared/components/skeleton/skeleton';
 import { EmptyState } from '../../shared/components/empty-state/empty-state';
-import { buildCartWhatsappMessage } from '../../core/utils/whatsapp-message';
+import { checkoutCartOnWhatsapp } from '../../core/utils/whatsapp-message';
 
 @Component({
   selector: 'app-cart',
@@ -44,13 +44,6 @@ export class Cart {
   }
 
   protected buyOnWhatsapp(): void {
-    const cart = this.cartService.cart();
-    if (!cart || cart.items.length === 0) {
-      return;
-    }
-
-    if (!this.settingsService.openWhatsapp(buildCartWhatsappMessage(cart))) {
-      this.toastService.error('Número do WhatsApp da loja ainda não foi configurado.');
-    }
+    checkoutCartOnWhatsapp(this.cartService.cart(), this.settingsService, this.toastService);
   }
 }

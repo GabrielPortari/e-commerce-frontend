@@ -62,6 +62,9 @@
 .cart-drawer {
   left: auto;
   right: 0;
+  // .drawer-panel (global) já é overflow-y:auto; aqui o scroll fica só
+  // em .cart-drawer-items, pra header/footer do drawer ficarem fixos.
+  overflow-y: hidden;
 }
 
 .cart-drawer-empty {

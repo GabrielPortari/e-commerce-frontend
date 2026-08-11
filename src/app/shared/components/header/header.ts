@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { CartService } from '../../../core/services/cart.service';
@@ -6,7 +6,9 @@ import { CategoryService } from '../../../core/services/category.service';
 import { SettingsService } from '../../../core/services/settings.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { Category } from '../../../core/models';
-import { buildCartWhatsappMessage } from '../../../core/utils/whatsapp-message';
+import { checkoutCartOnWhatsapp } from '../../../core/utils/whatsapp-message';
+
+type DrawerId = 'category' | 'cart' | null;
 
 @Component({
   selector: 'app-header',
@@ -20,8 +22,9 @@ export class Header {
   private readonly categoryService = inject(CategoryService);
   private readonly toastService = inject(ToastService);
 
-  protected readonly categoryMenuOpen = signal(false);
-  protected readonly cartMenuOpen = signal(false);
+  private readonly activeDrawer = signal<DrawerId>(null);
+  protected readonly categoryMenuOpen = computed(() => this.activeDrawer() === 'category');
+  protected readonly cartMenuOpen = computed(() => this.activeDrawer() === 'cart');
   protected readonly categories = signal<Category[]>([]);
 
   constructor() {
@@ -29,33 +32,24 @@ export class Header {
   }
 
   protected toggleCategoryMenu(): void {
-    this.categoryMenuOpen.update((open) => !open);
-    this.cartMenuOpen.set(false);
+    this.activeDrawer.update((current) => (current === 'category' ? null : 'category'));
   }
 
   protected closeCategoryMenu(): void {
-    this.categoryMenuOpen.set(false);
+    this.activeDrawer.set(null);
   }
 
   protected toggleCartMenu(): void {
-    this.cartMenuOpen.update((open) => !open);
-    this.categoryMenuOpen.set(false);
+    this.activeDrawer.update((current) => (current === 'cart' ? null : 'cart'));
   }
 
   protected closeCartMenu(): void {
-    this.cartMenuOpen.set(false);
+    this.activeDrawer.set(null);
   }
 
   protected buyOnWhatsapp(): void {
-    const cart = this.cartService.cart();
-    if (!cart || cart.items.length === 0) {
-      return;
-    }
-
-    if (this.settingsService.openWhatsapp(buildCartWhatsappMessage(cart))) {
+    if (checkoutCartOnWhatsapp(this.cartService.cart(), this.settingsService, this.toastService)) {
       this.closeCartMenu();
-    } else {
-      this.toastService.error('Número do WhatsApp da loja ainda não foi configurado.');
     }
   }
 }

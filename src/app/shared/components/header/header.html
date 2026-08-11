@@ -84,7 +84,15 @@
         </button>
       </div>
 
-      @if (!cartService.cart() || cartService.cart()!.items.length === 0) {
+      @if (cartService.loading()) {
+        <div class="cart-drawer-empty">
+          <p>Carregando carrinho...</p>
+        </div>
+      } @else if (cartService.error()) {
+        <div class="cart-drawer-empty">
+          <p class="error">{{ cartService.error() }}</p>
+        </div>
+      } @else if (!cartService.cart() || cartService.cart()!.items.length === 0) {
         <div class="cart-drawer-empty">
           <p>Seu carrinho está vazio.</p>
           <a class="btn btn--secondary btn--sm" routerLink="/produtos" (click)="closeCartMenu()">
