@@ -7,7 +7,7 @@ import { SettingsService } from '../../core/services/settings.service';
 import { ApiError } from '../../core/models';
 import { Skeleton } from '../../shared/components/skeleton/skeleton';
 import { EmptyState } from '../../shared/components/empty-state/empty-state';
-import { formatCurrencyBRL } from '../../core/utils/currency';
+import { buildCartWhatsappMessage } from '../../core/utils/whatsapp-message';
 
 @Component({
   selector: 'app-cart',
@@ -49,18 +49,7 @@ export class Cart {
       return;
     }
 
-    const lines = cart.items.map(
-      (item, index) => `${index + 1}. ${item.productName} (x${item.quantity}) - ${formatCurrencyBRL(item.subtotal)}`
-    );
-    const message = [
-      'Olá! Gostaria de comprar os seguintes itens:',
-      '',
-      ...lines,
-      '',
-      `Total: ${formatCurrencyBRL(cart.total)}`,
-    ].join('\n');
-
-    if (!this.settingsService.openWhatsapp(message)) {
+    if (!this.settingsService.openWhatsapp(buildCartWhatsappMessage(cart))) {
       this.toastService.error('Número do WhatsApp da loja ainda não foi configurado.');
     }
   }
