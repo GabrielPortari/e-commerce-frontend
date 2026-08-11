@@ -46,6 +46,12 @@
     <div class="info">
       <h1>{{ product.name }}</h1>
       <p class="category">{{ product.category.name }}</p>
+      @if (product.reviewCount > 0) {
+        <p class="rating-summary">
+          ★ {{ product.averageRating?.toFixed(1) }}
+          <span class="rating-count">({{ product.reviewCount }} avaliações)</span>
+        </p>
+      }
       @if (product.description) {
         <p class="description">{{ product.description }}</p>
       }
@@ -91,6 +97,66 @@
         <button type="button" class="btn btn--text" (click)="shareProduct()">Compartilhar</button>
       </div>
     </div>
+  </section>
+
+  <section class="reviews">
+    <h2>Avaliações</h2>
+
+    @if (reviews().length === 0) {
+      <p class="reviews-empty">Ainda não há avaliações para este produto.</p>
+    } @else {
+      <ul class="reviews-list">
+        @for (review of reviews(); track review.id) {
+          <li class="review-item card">
+            <div class="review-item-header">
+              <span class="review-item-rating">{{ '★'.repeat(review.rating) }}{{ '☆'.repeat(5 - review.rating) }}</span>
+              <span class="review-item-author">{{ review.authorName }}</span>
+              @if (authService.isLoggedIn()) {
+                <button
+                  type="button"
+                  class="btn btn--text review-item-remove"
+                  (click)="deleteReview(review)"
+                >
+                  Remover
+                </button>
+              }
+            </div>
+            @if (review.comment) {
+              <p class="review-item-comment">{{ review.comment }}</p>
+            }
+          </li>
+        }
+      </ul>
+    }
+
+    <form [formGroup]="reviewForm" (ngSubmit)="submitReview()" class="review-form">
+      <h3>Deixe sua avaliação</h3>
+
+      <div class="field">
+        <label class="field-label" for="review-author">Nome</label>
+        <input id="review-author" type="text" formControlName="authorName" />
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="review-rating">Nota</label>
+        <select id="review-rating" formControlName="rating">
+          <option [value]="5">5 - Excelente</option>
+          <option [value]="4">4 - Bom</option>
+          <option [value]="3">3 - Regular</option>
+          <option [value]="2">2 - Ruim</option>
+          <option [value]="1">1 - Péssimo</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="review-comment">Comentário (opcional)</label>
+        <textarea id="review-comment" formControlName="comment"></textarea>
+      </div>
+
+      <button type="submit" class="btn btn--primary" [disabled]="submittingReview()">
+        {{ submittingReview() ? 'Enviando...' : 'Enviar avaliação' }}
+      </button>
+    </form>
   </section>
 
   @if (relatedProducts().length > 0) {

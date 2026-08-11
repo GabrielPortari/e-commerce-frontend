@@ -19,5 +19,7 @@ export interface Product {
   onSale: boolean;
   discountPrice: number | null;
   featured: boolean;
+  averageRating: number | null;
+  reviewCount: number;
   createdAt: string;
 }

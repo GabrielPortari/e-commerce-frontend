@@ -10,6 +10,12 @@
     }
   </div>
   <h3>{{ product().name }}</h3>
+  @if (product().reviewCount > 0) {
+    <p class="product-card-rating">
+      ★ {{ product().averageRating?.toFixed(1) }}
+      <span class="product-card-rating-count">({{ product().reviewCount }})</span>
+    </p>
+  }
   <app-product-price
     [price]="product().price"
     [onSale]="product().onSale"

@@ -4,3 +4,4 @@ export * from './cart.model';
 export * from './auth.model';
 export * from './api-error.model';
 export * from './settings.model';
+export * from './review.model';
