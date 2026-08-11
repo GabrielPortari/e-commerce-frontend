@@ -1,12 +1,60 @@
 <section class="page-band">
-  <div class="page-band-inner hero-content">
-    <p class="hero-eyebrow">Sobre nós</p>
-    <h1>Roupas pensadas para o seu dia a dia</h1>
-    <p class="hero-text">
-      Selecionamos peças com qualidade e bom caimento, direto para a sua casa. Um catálogo
-      enxuto, sem enrolação, com atendimento próximo do início ao fim da compra.
-    </p>
-    <a routerLink="/produtos" class="btn btn--primary">Ver produtos</a>
+  <div class="page-band-inner">
+    <div class="hero-carousel">
+      <button
+        type="button"
+        class="carousel-nav"
+        aria-label="Slide anterior"
+        (click)="prevSlide()"
+      >
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+          <path fill="currentColor" d="M15.7 4.3a1 1 0 0 1 0 1.4L9.42 12l6.3 6.3a1 1 0 0 1-1.42 1.4l-7-7a1 1 0 0 1 0-1.4l7-7a1 1 0 0 1 1.42 0Z" />
+        </svg>
+      </button>
+
+      <div class="hero-viewport">
+        <div class="hero-track" [style.transform]="'translateX(-' + activeSlide() * 100 + '%)'">
+          @for (slide of heroSlides; track slide.title; let i = $index) {
+            <div
+              class="hero-slide"
+              [attr.aria-hidden]="i === activeSlide() ? null : 'true'"
+              [attr.inert]="i === activeSlide() ? null : ''"
+            >
+              <div class="hero-slide-text">
+                <p class="hero-eyebrow">{{ slide.eyebrow }}</p>
+                <h1>{{ slide.title }}</h1>
+                <p class="hero-text">{{ slide.text }}</p>
+                <a [routerLink]="slide.ctaLink" class="btn btn--primary">{{ slide.cta }}</a>
+              </div>
+              <div class="hero-slide-media" [class]="'hero-slide-media--' + i"></div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <button
+        type="button"
+        class="carousel-nav"
+        aria-label="Próximo slide"
+        (click)="nextSlide()"
+      >
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+          <path fill="currentColor" d="M8.3 4.3a1 1 0 0 1 1.42 0l7 7a1 1 0 0 1 0 1.4l-7 7a1 1 0 0 1-1.42-1.4l6.3-6.3-6.3-6.3a1 1 0 0 1 0-1.4Z" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="hero-dots">
+      @for (slide of heroSlides; track slide.title; let i = $index) {
+        <button
+          type="button"
+          class="hero-dot"
+          [class.is-active]="i === activeSlide()"
+          [attr.aria-label]="'Ir para o slide ' + (i + 1)"
+          (click)="goToSlide(i)"
+        ></button>
+      }
+    </div>
   </div>
 </section>
 
@@ -19,7 +67,7 @@
       </div>
 
       @if (loading()) {
-        <div class="product-grid">
+        <app-carousel>
           @for (_ of skeletonItems; track $index) {
             <div class="product-card-skeleton">
               <app-skeleton height="180px" />
@@ -27,13 +75,13 @@
               <app-skeleton height="1rem" width="40%" />
             </div>
           }
-        </div>
+        </app-carousel>
       } @else {
-        <div class="product-grid">
+        <app-carousel>
           @for (product of promotions(); track product.id) {
             <app-product-card [product]="product" />
           }
-        </div>
+        </app-carousel>
       }
     </div>
   </section>
@@ -47,7 +95,7 @@
     </div>
 
     @if (loading()) {
-      <div class="product-grid">
+      <app-carousel>
         @for (_ of skeletonItems; track $index) {
           <div class="product-card-skeleton">
             <app-skeleton height="180px" />
@@ -55,15 +103,15 @@
             <app-skeleton height="1rem" width="40%" />
           </div>
         }
-      </div>
+      </app-carousel>
     } @else if (error()) {
       <p class="error">{{ error() }}</p>
     } @else {
-      <div class="product-grid">
+      <app-carousel>
         @for (product of newArrivals(); track product.id) {
           <app-product-card [product]="product" />
         }
-      </div>
+      </app-carousel>
     }
   </div>
 </section>

@@ -27,7 +27,14 @@
   }
 }
 
+.site-header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
 .category-toggle,
+.theme-toggle,
 .cart-toggle {
   display: flex;
   align-items: center;
@@ -66,6 +73,15 @@
 .cart-drawer {
   left: auto;
   right: 0;
+  // .drawer-panel (global) entra pela esquerda (translateX(-100%) -> 0);
+  // como este painel fica ancorado à direita, a entrada precisa vir do lado
+  // oposto, senão desliza de dentro da tela em vez de fora da viewport.
+  transform: translateX(100%);
+
+  &.is-open {
+    transform: translateX(0);
+  }
+
   // .drawer-panel (global) já é overflow-y:auto; aqui o scroll fica só
   // em .cart-drawer-items, pra header/footer do drawer ficarem fixos.
   overflow-y: hidden;

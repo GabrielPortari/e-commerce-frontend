@@ -6,6 +6,18 @@
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <script>
+    // Aplica o tema salvo antes do Angular/CSS renderizarem, pra evitar um
+    // flash do tema claro (default do :root) quando o usuário já escolheu
+    // escuro explicitamente. Sem tema salvo, o :root já segue o SO via
+    // `prefers-color-scheme` (ver _tokens.scss) e este script não faz nada.
+    (function () {
+      var stored = localStorage.getItem('theme');
+      if (stored === 'light' || stored === 'dark') {
+        document.documentElement.setAttribute('data-theme', stored);
+      }
+    })();
+  </script>
 </head>
 <body>
   <app-root></app-root>

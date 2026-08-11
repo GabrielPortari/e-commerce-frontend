@@ -7,10 +7,11 @@ import { Category, Product } from '../../core/models';
 import { Skeleton } from '../../shared/components/skeleton/skeleton';
 import { EmptyState } from '../../shared/components/empty-state/empty-state';
 import { ProductCard } from '../../shared/components/product-card/product-card';
+import { Carousel } from '../../shared/components/carousel/carousel';
 
 @Component({
   selector: 'app-product-list',
-  imports: [Skeleton, EmptyState, ProductCard],
+  imports: [Skeleton, EmptyState, ProductCard, Carousel],
   templateUrl: './product-list.html',
   styleUrl: './product-list.scss',
 })
