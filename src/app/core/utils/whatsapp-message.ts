@@ -1,6 +1,4 @@
 import { Cart } from '../models';
-import { SettingsService } from '../services/settings.service';
-import { ToastService } from '../services/toast.service';
 import { formatCurrencyBRL } from './currency';
 
 export function buildCartWhatsappMessage(cart: Cart): string {
@@ -15,22 +13,4 @@ export function buildCartWhatsappMessage(cart: Cart): string {
     '',
     `Total: ${formatCurrencyBRL(cart.total)}`,
   ].join('\n');
-}
-
-/** Abre o WhatsApp com os itens do carrinho; mostra toast e retorna false se não der certo. */
-export function checkoutCartOnWhatsapp(
-  cart: Cart | null,
-  settingsService: SettingsService,
-  toastService: ToastService
-): boolean {
-  if (!cart || cart.items.length === 0) {
-    return false;
-  }
-
-  if (settingsService.openWhatsapp(buildCartWhatsappMessage(cart))) {
-    return true;
-  }
-
-  toastService.error('Número do WhatsApp da loja ainda não foi configurado.');
-  return false;
 }

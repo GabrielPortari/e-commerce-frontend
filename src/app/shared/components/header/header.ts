@@ -4,9 +4,8 @@ import { RouterLink } from '@angular/router';
 import { CartService } from '../../../core/services/cart.service';
 import { CategoryService } from '../../../core/services/category.service';
 import { SettingsService } from '../../../core/services/settings.service';
-import { ToastService } from '../../../core/services/toast.service';
+import { WhatsappCheckoutService } from '../../../core/services/whatsapp-checkout.service';
 import { Category } from '../../../core/models';
-import { checkoutCartOnWhatsapp } from '../../../core/utils/whatsapp-message';
 
 type DrawerId = 'category' | 'cart' | null;
 
@@ -20,7 +19,7 @@ export class Header {
   protected readonly cartService = inject(CartService);
   protected readonly settingsService = inject(SettingsService);
   private readonly categoryService = inject(CategoryService);
-  private readonly toastService = inject(ToastService);
+  private readonly whatsappCheckoutService = inject(WhatsappCheckoutService);
 
   private readonly activeDrawer = signal<DrawerId>(null);
   protected readonly categoryMenuOpen = computed(() => this.activeDrawer() === 'category');
@@ -48,7 +47,7 @@ export class Header {
   }
 
   protected buyOnWhatsapp(): void {
-    if (checkoutCartOnWhatsapp(this.cartService.cart(), this.settingsService, this.toastService)) {
+    if (this.whatsappCheckoutService.checkoutCart(this.cartService.cart())) {
       this.closeCartMenu();
     }
   }

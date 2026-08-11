@@ -7,7 +7,7 @@ import { SettingsService } from '../../core/services/settings.service';
 import { ApiError } from '../../core/models';
 import { Skeleton } from '../../shared/components/skeleton/skeleton';
 import { EmptyState } from '../../shared/components/empty-state/empty-state';
-import { checkoutCartOnWhatsapp } from '../../core/utils/whatsapp-message';
+import { WhatsappCheckoutService } from '../../core/services/whatsapp-checkout.service';
 
 @Component({
   selector: 'app-cart',
@@ -19,6 +19,7 @@ export class Cart {
   protected readonly cartService = inject(CartService);
   private readonly toastService = inject(ToastService);
   protected readonly settingsService = inject(SettingsService);
+  private readonly whatsappCheckoutService = inject(WhatsappCheckoutService);
   protected readonly skeletonItems = Array.from({ length: 3 });
 
   protected updateQuantity(itemId: number, value: string): void {
@@ -44,6 +45,6 @@ export class Cart {
   }
 
   protected buyOnWhatsapp(): void {
-    checkoutCartOnWhatsapp(this.cartService.cart(), this.settingsService, this.toastService);
+    this.whatsappCheckoutService.checkoutCart(this.cartService.cart());
   }
 }
