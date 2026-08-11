@@ -18,6 +18,10 @@ body {
   color: var(--color-ink);
   background: var(--color-bg);
   -webkit-font-smoothing: antialiased;
+  // Seções full-bleed "escapam" do padding do container via largura de
+  // viewport (100vw) + margem negativa; isso pode gerar um scrollbar
+  // horizontal espúrio por arredondamento de subpixel — trava aqui.
+  overflow-x: hidden;
 }
 
 h1,
@@ -171,22 +175,23 @@ button:disabled {
   padding: var(--space-4);
 }
 
-// Grid de cards de produto — reaproveitado no catálogo, promoções e home.
+// Lista horizontal de cards de produto — reaproveitada no catálogo,
+// promoções e home. Não quebra linha: rola na horizontal em vez de
+// empilhar/quebrar para múltiplas linhas.
 .product-grid {
-  display: grid;
-  grid-template-columns: 1fr;
+  display: flex;
   gap: var(--space-4);
+  overflow-x: auto;
+  padding-bottom: var(--space-1);
+  scroll-snap-type: x proximity;
+}
+
+.product-grid > * {
+  flex: 0 0 200px;
+  scroll-snap-align: start;
 
   @media (min-width: 480px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  @media (min-width: 768px) {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  @media (min-width: 1024px) {
-    grid-template-columns: repeat(4, 1fr);
+    flex-basis: 220px;
   }
 }
 
@@ -194,6 +199,11 @@ button:disabled {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+  flex: 0 0 200px;
+
+  @media (min-width: 480px) {
+    flex-basis: 220px;
+  }
 }
 
 // Drawer lateral (off-canvas) — reaproveitado no menu de categorias e telas
@@ -202,7 +212,10 @@ button:disabled {
   position: fixed;
   inset: 0;
   background: rgba(26, 26, 24, 0.45);
-  z-index: 100;
+  // Acima do toast-container (z-index 200): um drawer aberto é modal e não
+  // pode ficar com botões cobertos por um toast que aparece por cima dele
+  // (ex: "produto adicionado" logo após abrir o drawer do carrinho).
+  z-index: 210;
 }
 
 .drawer-panel {
