@@ -16,39 +16,19 @@
       </svg>
     </button>
 
-    <a class="brand" routerLink="/" (click)="closeMenu()">E-commerce</a>
+    <a class="brand" routerLink="/">E-commerce</a>
 
-    <button
-      type="button"
-      class="menu-toggle"
-      [attr.aria-expanded]="menuOpen()"
-      aria-controls="site-nav"
-      [attr.aria-label]="menuOpen() ? 'Fechar menu' : 'Abrir menu'"
-      (click)="toggleMenu()"
-    >
-      <span class="menu-toggle-bar"></span>
-      <span class="menu-toggle-bar"></span>
-      <span class="menu-toggle-bar"></span>
-    </button>
-
-    <nav id="site-nav" class="site-nav" [class.site-nav--open]="menuOpen()">
-      <a routerLink="/produtos" (click)="closeMenu()">Produtos</a>
-      <a routerLink="/promocoes" (click)="closeMenu()">Promoções</a>
-      <a routerLink="/carrinho" (click)="closeMenu()">
-        Carrinho
-        @if (cartService.itemCount() > 0) {
-          <span class="cart-count">{{ cartService.itemCount() }}</span>
-        }
-      </a>
-      @if (authService.isLoggedIn()) {
-        <a routerLink="/admin/produtos" (click)="closeMenu()">Produtos (admin)</a>
-        <a routerLink="/admin/categorias" (click)="closeMenu()">Categorias (admin)</a>
-        <a routerLink="/admin/configuracoes" (click)="closeMenu()">Configurações</a>
-        <button type="button" class="btn btn--text" (click)="logout()">Sair</button>
-      } @else {
-        <a routerLink="/admin/login" (click)="closeMenu()">Admin</a>
+    <a class="cart-toggle" routerLink="/carrinho" aria-label="Carrinho">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+        <path
+          fill="currentColor"
+          d="M7 4H5v2h2l3.6 7.59-1.35 2.44c-.16.28-.25.61-.25.97 0 1.1.9 2 2 2h12v-2H10.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0 0 23 6H8.42l-.94-2H7ZM11 19.5A2.5 2.5 0 1 0 11 24a2.5 2.5 0 0 0 0-4.5Zm8 0a2.5 2.5 0 1 0 0 4.5 2.5 2.5 0 0 0 0-4.5Z"
+        />
+      </svg>
+      @if (cartService.itemCount() > 0) {
+        <span class="cart-count">{{ cartService.itemCount() }}</span>
       }
-    </nav>
+    </a>
   </div>
 </header>
 
