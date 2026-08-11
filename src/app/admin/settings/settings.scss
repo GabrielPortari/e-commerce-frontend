@@ -1,0 +1,16 @@
+.settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: 420px;
+
+  h2 {
+    margin-top: 0;
+  }
+
+  .field-hint {
+    color: var(--color-ink-muted);
+    font-size: var(--text-sm);
+    margin-top: 0;
+  }
+}

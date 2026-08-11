@@ -8,8 +8,12 @@ function isAdminRoute(url: string, method: string): boolean {
   if (url.includes('/admin/')) {
     return true;
   }
+  const upperMethod = method.toUpperCase();
+  if (url.includes('/settings')) {
+    return upperMethod === 'PUT';
+  }
   const isCategoriesOrProducts = url.includes('/categories') || url.includes('/products');
-  return isCategoriesOrProducts && WRITE_METHODS.includes(method.toUpperCase());
+  return isCategoriesOrProducts && WRITE_METHODS.includes(upperMethod);
 }
 
 export const jwtInterceptor: HttpInterceptorFn = (req, next) => {

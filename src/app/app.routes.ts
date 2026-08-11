@@ -23,15 +23,6 @@ export const routes: Routes = [
     loadComponent: () => import('./storefront/cart/cart').then((m) => m.Cart)
   },
   {
-    path: 'checkout',
-    loadComponent: () => import('./storefront/checkout/checkout').then((m) => m.Checkout)
-  },
-  {
-    path: 'pedido/:id',
-    loadComponent: () =>
-      import('./storefront/order-confirmation/order-confirmation').then((m) => m.OrderConfirmation)
-  },
-  {
     path: 'admin/login',
     loadComponent: () => import('./admin/login/login').then((m) => m.Login)
   },
@@ -51,6 +42,11 @@ export const routes: Routes = [
     path: 'admin/pedidos',
     canActivate: [authGuard],
     loadComponent: () => import('./admin/order-list/order-list').then((m) => m.OrderList)
+  },
+  {
+    path: 'admin/configuracoes',
+    canActivate: [authGuard],
+    loadComponent: () => import('./admin/settings/settings').then((m) => m.SettingsPage)
   },
   {
     path: '**',

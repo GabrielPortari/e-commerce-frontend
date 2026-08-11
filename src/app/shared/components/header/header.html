@@ -41,7 +41,10 @@
         }
       </a>
       @if (authService.isLoggedIn()) {
-        <a routerLink="/admin/pedidos" (click)="closeMenu()">Admin</a>
+        <a routerLink="/admin/produtos" (click)="closeMenu()">Produtos (admin)</a>
+        <a routerLink="/admin/categorias" (click)="closeMenu()">Categorias (admin)</a>
+        <a routerLink="/admin/pedidos" (click)="closeMenu()">Pedidos (admin)</a>
+        <a routerLink="/admin/configuracoes" (click)="closeMenu()">Configurações</a>
         <button type="button" class="btn btn--text" (click)="logout()">Sair</button>
       } @else {
         <a routerLink="/admin/login" (click)="closeMenu()">Admin</a>
