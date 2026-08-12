@@ -1,0 +1,34 @@
+:host {
+  display: block;
+  margin-bottom: var(--space-4);
+}
+
+.breadcrumbs ol {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-sm);
+  color: var(--color-ink-muted);
+}
+
+.breadcrumbs li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.breadcrumbs a {
+  color: var(--color-ink-muted);
+
+  &:hover {
+    color: var(--color-ink);
+  }
+}
+
+.breadcrumbs-separator {
+  color: var(--color-ink-subtle);
+}

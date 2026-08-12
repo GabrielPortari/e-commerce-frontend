@@ -1,14 +1,92 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { firstValueFrom } from 'rxjs';
 import { ProductService } from '../../core/services/product.service';
 import { CategoryService } from '../../core/services/category.service';
 import { ToastService } from '../../core/services/toast.service';
-import { ApiError, Category, Product } from '../../core/models';
+import { ApiError, Category, Product, ProductImage } from '../../core/models';
 import { Skeleton } from '../../shared/components/skeleton/skeleton';
 import { EmptyState } from '../../shared/components/empty-state/empty-state';
 import { Badge } from '../../shared/components/badge/badge';
 import { Modal } from '../../shared/components/modal/modal';
+
+function csvEscape(value: string | number): string {
+  const text = String(value);
+  return /[";\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+}
+
+// Parseia o CSV inteiro de uma vez (não linha a linha) porque campos entre
+// aspas podem conter quebras de linha literais (ex.: descrição multi-linha
+// exportada) — dividir por linha antes de rastrear aspas corrompe esses campos.
+function parseCsvRows(text: string): string[][] {
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let current = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    if (inQuotes) {
+      if (char === '"' && text[i + 1] === '"') {
+        current += '"';
+        i++;
+      } else if (char === '"') {
+        inQuotes = false;
+      } else {
+        current += char;
+      }
+    } else if (char === '"') {
+      inQuotes = true;
+    } else if (char === ';') {
+      row.push(current);
+      current = '';
+    } else if (char === '\r') {
+      // ignora — o \n seguinte fecha a linha
+    } else if (char === '\n') {
+      row.push(current);
+      current = '';
+      if (row.some((field) => field.trim().length > 0)) {
+        rows.push(row);
+      }
+      row = [];
+    } else {
+      current += char;
+    }
+  }
+  row.push(current);
+  if (row.some((field) => field.trim().length > 0)) {
+    rows.push(row);
+  }
+  return rows;
+}
+
+interface ImportRow {
+  id: number | null;
+  name: string;
+  description: string;
+  price: number;
+  stock: number;
+  categoryName: string;
+  onSale: boolean;
+  discountPrice: number | null;
+  featured: boolean;
+}
+
+function parseProductsCsv(text: string): ImportRow[] {
+  const [, ...dataRows] = parseCsvRows(text);
+  return dataRows.map(([id, name, description, price, stock, categoryName, , onSale, discountPrice, featured]) => ({
+    id: id?.trim() ? Number(id) : null,
+    name: (name ?? '').trim(),
+    description: (description ?? '').trim(),
+    price: Number((price ?? '0').replace(',', '.')),
+    stock: Number(stock ?? '0'),
+    categoryName: (categoryName ?? '').trim(),
+    onSale: (onSale ?? '').trim().toLowerCase() === 'sim',
+    discountPrice: discountPrice?.trim() ? Number(discountPrice.replace(',', '.')) : null,
+    featured: (featured ?? '').trim().toLowerCase() === 'sim',
+  }));
+}
 
 @Component({
   selector: 'app-product-management',
@@ -26,10 +104,40 @@ export class ProductManagement {
   protected readonly categories = signal<Category[]>([]);
   protected readonly loading = signal(true);
   protected readonly editingId = signal<number | null>(null);
+  protected readonly formModalOpen = signal(false);
   protected readonly uploadingImage = signal(false);
   protected readonly saving = signal(false);
+  protected readonly galleryImages = signal<ProductImage[]>([]);
+  protected readonly uploadingGalleryImage = signal(false);
   protected readonly productPendingDeactivate = signal<Product | null>(null);
+  protected readonly importingCsv = signal(false);
   protected readonly skeletonItems = Array.from({ length: 4 });
+
+  protected readonly searchTerm = signal('');
+  protected readonly statusFilter = signal<'all' | 'active' | 'inactive'>('all');
+  protected readonly categoryFilter = signal<number | null>(null);
+
+  protected readonly filteredProducts = computed(() => {
+    const term = this.searchTerm().trim().toLowerCase();
+    const status = this.statusFilter();
+    const categoryId = this.categoryFilter();
+
+    return this.products().filter((product) => {
+      if (term && !product.name.toLowerCase().includes(term)) {
+        return false;
+      }
+      if (status === 'active' && !product.active) {
+        return false;
+      }
+      if (status === 'inactive' && product.active) {
+        return false;
+      }
+      if (categoryId !== null && product.category.id !== categoryId) {
+        return false;
+      }
+      return true;
+    });
+  });
 
   protected readonly form = this.fb.nonNullable.group({
     name: ['', Validators.required],
@@ -40,6 +148,7 @@ export class ProductManagement {
     imageUrl: [''],
     onSale: [false],
     discountPrice: [0],
+    featured: [false],
   });
 
   constructor() {
@@ -61,6 +170,35 @@ export class ProductManagement {
     });
   }
 
+  protected onSearchInput(term: string): void {
+    this.searchTerm.set(term);
+  }
+
+  protected onStatusFilterChange(status: string): void {
+    this.statusFilter.set(status as 'all' | 'active' | 'inactive');
+  }
+
+  protected onCategoryFilterChange(categoryId: string): void {
+    this.categoryFilter.set(categoryId ? Number(categoryId) : null);
+  }
+
+  protected openCreateForm(): void {
+    this.editingId.set(null);
+    this.form.reset({
+      name: '',
+      description: '',
+      price: 0,
+      stock: 0,
+      categoryId: 0,
+      imageUrl: '',
+      onSale: false,
+      discountPrice: 0,
+      featured: false,
+    });
+    this.galleryImages.set([]);
+    this.formModalOpen.set(true);
+  }
+
   protected startEdit(product: Product): void {
     this.editingId.set(product.id);
     this.form.setValue({
@@ -72,20 +210,57 @@ export class ProductManagement {
       imageUrl: product.imageUrl ?? '',
       onSale: product.onSale,
       discountPrice: product.discountPrice ?? 0,
+      featured: product.featured,
+    });
+    this.galleryImages.set(product.images);
+    this.formModalOpen.set(true);
+  }
+
+  protected closeForm(): void {
+    this.formModalOpen.set(false);
+    this.editingId.set(null);
+    this.galleryImages.set([]);
+    this.uploadingGalleryImage.set(false);
+  }
+
+  protected onGalleryImageSelected(input: HTMLInputElement): void {
+    const file = input.files?.[0];
+    const productId = this.editingId();
+    if (!file || !productId) {
+      return;
+    }
+
+    this.uploadingGalleryImage.set(true);
+    this.productService.addGalleryImage(productId, file).subscribe({
+      next: (images) => {
+        if (this.editingId() === productId) {
+          this.galleryImages.set(images);
+          this.uploadingGalleryImage.set(false);
+        }
+        input.value = '';
+      },
+      error: () => {
+        this.toastService.error('Falha ao enviar a imagem.');
+        if (this.editingId() === productId) {
+          this.uploadingGalleryImage.set(false);
+        }
+      },
     });
   }
 
-  protected cancelEdit(): void {
-    this.editingId.set(null);
-    this.form.reset({
-      name: '',
-      description: '',
-      price: 0,
-      stock: 0,
-      categoryId: 0,
-      imageUrl: '',
-      onSale: false,
-      discountPrice: 0,
+  protected removeGalleryImage(image: ProductImage): void {
+    const productId = this.editingId();
+    if (!productId) {
+      return;
+    }
+
+    this.productService.deleteGalleryImage(productId, image.id).subscribe({
+      next: (images) => {
+        if (this.editingId() === productId) {
+          this.galleryImages.set(images);
+        }
+      },
+      error: () => this.toastService.error('Falha ao remover a imagem.'),
     });
   }
 
@@ -130,6 +305,7 @@ export class ProductManagement {
       imageUrl: value.imageUrl || null,
       onSale: value.onSale,
       discountPrice: value.onSale ? value.discountPrice : null,
+      featured: value.featured,
     };
 
     this.saving.set(true);
@@ -142,14 +318,138 @@ export class ProductManagement {
     request$.subscribe({
       next: () => {
         this.saving.set(false);
-        this.cancelEdit();
+        this.closeForm();
         this.loadProducts();
+        this.toastService.success(editingId ? 'Produto atualizado.' : 'Produto criado.');
       },
       error: (err: { error?: ApiError }) => {
         this.toastService.error(err.error?.message ?? 'Erro ao salvar produto.');
         this.saving.set(false);
       },
     });
+  }
+
+  protected reactivate(product: Product): void {
+    this.productService.reactivate(product.id).subscribe({
+      next: () => {
+        this.loadProducts();
+        this.toastService.success(`"${product.name}" reativado.`);
+      },
+      error: (err: { error?: ApiError }) => {
+        this.toastService.error(err.error?.message ?? 'Erro ao reativar produto.');
+      },
+    });
+  }
+
+  protected exportCsv(): void {
+    const header = [
+      'id',
+      'nome',
+      'descricao',
+      'preco',
+      'estoque',
+      'categoria',
+      'ativo',
+      'emPromocao',
+      'precoPromocional',
+      'destaque',
+    ];
+    const rows = this.filteredProducts().map((product) => [
+      product.id,
+      product.name,
+      product.description ?? '',
+      product.price,
+      product.stock,
+      product.category.name,
+      product.active ? 'sim' : 'não',
+      product.onSale ? 'sim' : 'não',
+      product.discountPrice ?? '',
+      product.featured ? 'sim' : 'não',
+    ]);
+
+    const csv = [header, ...rows].map((row) => row.map(csvEscape).join(';')).join('\r\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `produtos-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  protected async importCsv(input: HTMLInputElement): Promise<void> {
+    const file = input.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    this.importingCsv.set(true);
+    const rows = parseProductsCsv(await file.text());
+    const categories = this.categories();
+    const existingProducts = this.products();
+
+    let created = 0;
+    let updated = 0;
+    const errors: string[] = [];
+
+    for (const row of rows) {
+      if (!row.name) {
+        continue;
+      }
+      const category = categories.find((c) => c.name.toLowerCase() === row.categoryName.toLowerCase());
+      if (!category) {
+        errors.push(`"${row.name}": categoria "${row.categoryName}" não encontrada`);
+        continue;
+      }
+      if (!(row.price > 0)) {
+        errors.push(`"${row.name}": preço inválido`);
+        continue;
+      }
+      if (row.onSale && !(row.discountPrice !== null && row.discountPrice > 0 && row.discountPrice < row.price)) {
+        errors.push(`"${row.name}": preço promocional inválido`);
+        continue;
+      }
+
+      const existing =
+        (row.id !== null && existingProducts.find((p) => p.id === row.id)) ||
+        existingProducts.find((p) => p.name.toLowerCase() === row.name.toLowerCase());
+
+      const request = {
+        name: row.name,
+        description: row.description,
+        price: row.price,
+        stock: row.stock,
+        categoryId: category.id,
+        imageUrl: existing?.imageUrl ?? null,
+        onSale: row.onSale,
+        discountPrice: row.onSale ? row.discountPrice : null,
+        featured: row.featured,
+      };
+
+      try {
+        if (existing) {
+          await firstValueFrom(this.productService.update(existing.id, request));
+          updated++;
+        } else {
+          await firstValueFrom(this.productService.create(request));
+          created++;
+        }
+      } catch {
+        errors.push(`"${row.name}": erro ao salvar`);
+      }
+    }
+
+    input.value = '';
+    this.importingCsv.set(false);
+    this.loadProducts();
+
+    if (errors.length > 0) {
+      this.toastService.error(
+        `${created} criados, ${updated} atualizados, ${errors.length} com erro: ${errors.join('; ')}`
+      );
+    } else {
+      this.toastService.success(`${created} produtos criados, ${updated} atualizados.`);
+    }
   }
 
   protected requestDeactivate(product: Product): void {

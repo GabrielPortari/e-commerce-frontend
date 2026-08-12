@@ -1,9 +1,15 @@
-<app-announcement-bar />
-<app-header />
-
-<main class="page-content container">
+@if (isAdminRoute()) {
   <router-outlet />
-</main>
+  <app-toast-container />
+} @else {
+  <app-announcement-bar />
+  <app-header />
 
-<app-footer />
-<app-toast-container />
+  <main class="page-content container">
+    <router-outlet />
+  </main>
+
+  <app-footer />
+  <app-toast-container />
+  <app-back-to-top />
+}

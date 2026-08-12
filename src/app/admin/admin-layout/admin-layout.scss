@@ -1,0 +1,89 @@
+@use 'mixins' as *;
+
+// AdminLayout é o shell completo das rotas /admin/** (ver app.html/app.ts) —
+// substitui inteiramente o header/footer/container públicos, não fica
+// aninhado dentro de .page-content. Por isso cuida da própria largura total
+// (topbar) e do próprio padding de conteúdo.
+.admin-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.admin-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.admin-topbar-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  height: var(--header-height);
+  padding: 0 var(--space-4);
+
+  @include from(md) {
+    padding: 0 var(--space-6);
+  }
+}
+
+.admin-brand {
+  flex: 0 0 auto;
+  font-weight: var(--weight-semibold);
+  color: var(--color-ink);
+
+  &:hover {
+    text-decoration: none;
+  }
+}
+
+.admin-nav {
+  display: flex;
+  gap: var(--space-1);
+  overflow-x: auto;
+  flex: 1;
+  min-width: 0;
+
+  a {
+    flex: 0 0 auto;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-sm);
+    color: var(--color-ink-muted);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    white-space: nowrap;
+    transition:
+      background-color var(--transition-fast),
+      color var(--transition-fast);
+
+    &:hover {
+      text-decoration: none;
+      color: var(--color-ink);
+      background: var(--color-bg);
+    }
+
+    &.is-active {
+      color: var(--color-accent-ink);
+      background: var(--color-accent);
+    }
+  }
+}
+
+.admin-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 0 0 auto;
+}
+
+.admin-content {
+  flex: 1;
+  padding: var(--space-6) var(--space-4);
+
+  @include from(md) {
+    padding: var(--space-6);
+  }
+}

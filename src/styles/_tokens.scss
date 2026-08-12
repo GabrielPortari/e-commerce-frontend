@@ -2,8 +2,48 @@
 // raio e sombra. Consumidos via variáveis CSS (:root) para que qualquer
 // componente possa usá-los sem importar SCSS.
 
+// Tokens de cor que mudam entre claro/escuro — mixin pra não duplicar valor
+// por valor entre o bloco de `prefers-color-scheme` (tema do dispositivo,
+// usado quando o usuário nunca escolheu um tema explicitamente) e o bloco
+// `[data-theme='dark']` (escolha explícita via o toggle do header, ver
+// ThemeService). Os dois blocos abaixo de `:root` sempre têm que ficar com
+// o mesmo conteúdo.
+@mixin dark-theme-tokens {
+  --color-bg: #171113;
+  --color-surface: #201619;
+  --color-border: #3a2b30;
+  --color-border-strong: #4d3940;
+
+  --color-ink: #f2e9e6;
+  --color-ink-muted: #c2b2ae;
+  --color-ink-subtle: #9c8b86;
+
+  --color-accent: #e08aa0;
+  --color-accent-hover: #eaa1b3;
+  --color-accent-ink: #201619;
+  --color-accent-soft: #3a222a;
+
+  --color-success: #6fae7a;
+  --color-success-soft: #1f3323;
+  --color-error: #e08585;
+  --color-error-soft: #3a1f1f;
+  --color-warning: #d9b45c;
+  --color-warning-soft: #3a2f14;
+
+  --color-focus-ring: #f2e9e6;
+
+  // Faixa alternada das seções full-bleed (ver .page-band em home.scss) —
+  // token próprio, não reaproveita --color-bg/--color-surface: os dois já
+  // são próximos demais entre si nesse tema (quase preto vs quase preto) pra
+  // servirem de contraste de seção sem também mexer no restante do app.
+  --color-band-alt: #2e2226;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.45);
+}
+
 :root {
-  // Cor — base neutra quente + terracota como único acento
+  // Cor — base neutra quente + vinho como único acento
   --color-bg: #faf9f7;
   --color-surface: #ffffff;
   --color-border: #e5e0da;
@@ -13,10 +53,10 @@
   --color-ink-muted: #5c5852;
   --color-ink-subtle: #6b6459;
 
-  --color-accent: #b5502f;
-  --color-accent-hover: #9c4327;
+  --color-accent: #7a1f3d;
+  --color-accent-hover: #5e1730;
   --color-accent-ink: #ffffff;
-  --color-accent-soft: #f4e3dc;
+  --color-accent-soft: #f5e2e8;
 
   --color-success: #3f6b47;
   --color-success-soft: #e5efe6;
@@ -26,6 +66,15 @@
   --color-warning-soft: #f5edd9;
 
   --color-focus-ring: #1a1a18;
+
+  // Backdrop de drawer/modal — mesmo tom nos dois temas (overlay escuro
+  // funciona igual sobre fundo claro ou escuro).
+  --color-overlay: rgba(26, 26, 24, 0.45);
+
+  // Faixa alternada das seções full-bleed — ver comentário no mixin
+  // dark-theme-tokens acima (mesmo motivo: --color-bg/--color-surface claros
+  // demais entre si pra marcar a alternância sozinhos).
+  --color-band-alt: #efe6d8;
 
   // Tipografia
   --font-base:
@@ -71,6 +120,21 @@
   // Transição
   --transition-fast: 120ms ease;
   --transition-base: 200ms ease;
+}
+
+// Tema do dispositivo (usuário nunca tocou no toggle) — só entra se não
+// houver escolha explícita (`data-theme='light'` também bloqueia, pro
+// usuário conseguir forçar claro mesmo com o SO em modo escuro).
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    @include dark-theme-tokens;
+  }
+}
+
+// Escolha explícita via o toggle do header (ThemeService grava o atributo
+// em <html> e persiste em localStorage) — vale independente do SO.
+:root[data-theme='dark'] {
+  @include dark-theme-tokens;
 }
 
 // Breakpoints (uso em SCSS, não têm equivalente direto em CSS var)

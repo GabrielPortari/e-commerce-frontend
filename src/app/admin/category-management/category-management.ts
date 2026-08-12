@@ -5,11 +5,12 @@ import { ToastService } from '../../core/services/toast.service';
 import { ApiError, Category } from '../../core/models';
 import { Skeleton } from '../../shared/components/skeleton/skeleton';
 import { EmptyState } from '../../shared/components/empty-state/empty-state';
+import { Badge } from '../../shared/components/badge/badge';
 import { Modal } from '../../shared/components/modal/modal';
 
 @Component({
   selector: 'app-category-management',
-  imports: [ReactiveFormsModule, Skeleton, EmptyState, Modal],
+  imports: [ReactiveFormsModule, Skeleton, EmptyState, Badge, Modal],
   templateUrl: './category-management.html',
   styleUrl: './category-management.scss',
 })
@@ -21,14 +22,12 @@ export class CategoryManagement {
   protected readonly categories = signal<Category[]>([]);
   protected readonly loading = signal(true);
   protected readonly editingId = signal<number | null>(null);
+  protected readonly formModalOpen = signal(false);
+  protected readonly saving = signal(false);
   protected readonly categoryPendingDelete = signal<Category | null>(null);
   protected readonly skeletonItems = Array.from({ length: 4 });
 
-  protected readonly createForm = this.fb.nonNullable.group({
-    name: ['', Validators.required],
-  });
-
-  protected readonly editForm = this.fb.nonNullable.group({
+  protected readonly form = this.fb.nonNullable.group({
     name: ['', Validators.required],
   });
 
@@ -50,44 +49,46 @@ export class CategoryManagement {
     });
   }
 
-  protected create(): void {
-    if (this.createForm.invalid) {
-      this.createForm.markAllAsTouched();
-      return;
-    }
-
-    this.categoryService.create(this.createForm.getRawValue()).subscribe({
-      next: () => {
-        this.createForm.reset();
-        this.loadCategories();
-      },
-      error: (err: { error?: ApiError }) =>
-        this.toastService.error(err.error?.message ?? 'Erro ao criar categoria.'),
-    });
+  protected openCreateForm(): void {
+    this.editingId.set(null);
+    this.form.reset({ name: '' });
+    this.formModalOpen.set(true);
   }
 
   protected startEdit(category: Category): void {
     this.editingId.set(category.id);
-    this.editForm.setValue({ name: category.name });
+    this.form.setValue({ name: category.name });
+    this.formModalOpen.set(true);
   }
 
-  protected cancelEdit(): void {
+  protected closeForm(): void {
+    this.formModalOpen.set(false);
     this.editingId.set(null);
   }
 
-  protected saveEdit(id: number): void {
-    if (this.editForm.invalid) {
-      this.editForm.markAllAsTouched();
+  protected submit(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
       return;
     }
 
-    this.categoryService.update(id, this.editForm.getRawValue()).subscribe({
+    const editingId = this.editingId();
+    const request$ = editingId
+      ? this.categoryService.update(editingId, this.form.getRawValue())
+      : this.categoryService.create(this.form.getRawValue());
+
+    this.saving.set(true);
+    request$.subscribe({
       next: () => {
-        this.editingId.set(null);
+        this.saving.set(false);
+        this.closeForm();
         this.loadCategories();
+        this.toastService.success(editingId ? 'Categoria atualizada.' : 'Categoria criada.');
       },
-      error: (err: { error?: ApiError }) =>
-        this.toastService.error(err.error?.message ?? 'Erro ao editar categoria.'),
+      error: (err: { error?: ApiError }) => {
+        this.saving.set(false);
+        this.toastService.error(err.error?.message ?? 'Erro ao salvar categoria.');
+      },
     });
   }
 

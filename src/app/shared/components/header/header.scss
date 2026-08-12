@@ -27,20 +27,14 @@
   }
 }
 
-.category-toggle,
-.cart-toggle {
+.site-header-actions {
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  background: transparent;
-  border: none;
-  color: var(--color-ink);
-  padding: 0;
-  margin: 0;
+  gap: var(--space-1);
 }
 
+// Visual em si é a classe global .icon-btn (styles.scss) — aqui só o que é
+// específico deste header.
 .cart-toggle {
   position: relative;
 }
@@ -66,6 +60,15 @@
 .cart-drawer {
   left: auto;
   right: 0;
+  // .drawer-panel (global) entra pela esquerda (translateX(-100%) -> 0);
+  // como este painel fica ancorado à direita, a entrada precisa vir do lado
+  // oposto, senão desliza de dentro da tela em vez de fora da viewport.
+  transform: translateX(100%);
+
+  &.is-open {
+    transform: translateX(0);
+  }
+
   // .drawer-panel (global) já é overflow-y:auto; aqui o scroll fica só
   // em .cart-drawer-items, pra header/footer do drawer ficarem fixos.
   overflow-y: hidden;

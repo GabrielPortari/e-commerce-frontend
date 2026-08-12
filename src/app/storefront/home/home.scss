@@ -2,17 +2,31 @@
 
 // Banda full-bleed: escapa do padding do .page-content usando largura de
 // viewport, para que a cor de fundo alcance a borda da tela. Alterna entre
-// --color-surface (branco) e o --color-bg do body por :nth-of-type, não por
-// classe fixa por seção — a home tem seções condicionais (@if de promoções/
-// categorias em destaque), e contar por índice real do DOM evita que duas
-// bandas da mesma cor fiquem coladas quando uma seção do meio não renderiza.
+// --color-surface e --color-band-alt por :nth-of-type, não por classe fixa
+// por seção — a home tem seções condicionais (@if de promoções/categorias em
+// destaque), e contar por índice real do DOM evita que duas bandas da mesma
+// cor fiquem coladas quando uma seção do meio não renderiza. Também ganham
+// uma borda entre si: a diferença de tom sozinha (--color-band-alt) ficava
+// fraca demais pra perceber, a borda garante uma costura nítida mesmo assim.
 .page-band {
   width: 100vw;
   margin-left: calc(50% - 50vw);
   margin-right: calc(50% - 50vw);
+  border-top: 1px solid var(--color-border);
+
+  &:first-of-type {
+    // Cola no navbar — sem o respiro que .page-content normalmente dá no
+    // topo das outras rotas.
+    margin-top: calc(-1 * var(--space-6));
+    border-top: none;
+  }
 
   &:nth-of-type(odd) {
     background: var(--color-surface);
+  }
+
+  &:nth-of-type(even) {
+    background: var(--color-band-alt);
   }
 }
 
@@ -24,7 +38,44 @@
   }
 }
 
-.hero-content {
+// Carrossel do "sobre nós" — todos os slides ficam montados lado a lado em
+// .hero-track (largura 100% cada) e .hero-viewport corta o que sobra;
+// trocar de slide só move o transform, o que dá uma transição de verdade
+// (desliza) em vez de trocar o conteúdo instantaneamente. Slides fora de
+// vista ganham inert/aria-hidden pra não roubar foco nem leitura de tela.
+.hero-carousel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.hero-viewport {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.hero-track {
+  display: flex;
+  transition: transform 450ms ease;
+}
+
+.hero-slide {
+  flex: 0 0 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+
+  @include from(md) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-7);
+  }
+}
+
+.hero-slide-text {
   max-width: 560px;
 }
 
@@ -37,7 +88,7 @@
   letter-spacing: 0.04em;
 }
 
-.hero-content h1 {
+.hero-slide-text h1 {
   font-size: var(--text-2xl);
   margin-bottom: var(--space-3);
 
@@ -49,6 +100,60 @@
 .hero-text {
   color: var(--color-ink-muted);
   margin-bottom: var(--space-5);
+}
+
+// Sem fotos reais no catálogo de demonstração (mesma convenção de
+// .category-card-placeholder): um bloco de cor lisa, uma por slide, só pra
+// diferenciar visualmente cada slide do carrossel.
+.hero-slide-media {
+  flex: 0 0 auto;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-lg);
+
+  @include from(md) {
+    max-width: 360px;
+  }
+
+  &--0 {
+    background: var(--color-accent-soft);
+  }
+
+  &--1 {
+    background: var(--color-band-alt);
+  }
+
+  &--2 {
+    background: var(--color-border);
+  }
+}
+
+.hero-dots {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-top: var(--space-5);
+
+  @include from(md) {
+    justify-content: flex-start;
+  }
+}
+
+.hero-dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: var(--color-border-strong);
+  transition:
+    width var(--transition-base),
+    background-color var(--transition-base);
+
+  &.is-active {
+    width: 22px;
+    background: var(--color-accent);
+  }
 }
 
 .home-section-header {

@@ -1,13 +1,14 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
-import { Product } from '../models';
+import { Product, ProductImage } from '../models';
 
 export interface ProductFilters {
   [key: string]: string | number | boolean | undefined;
   category?: number;
   name?: string;
   onSale?: boolean;
+  featured?: boolean;
 }
 
 export interface ProductRequest {
@@ -19,6 +20,7 @@ export interface ProductRequest {
   categoryId: number;
   onSale: boolean;
   discountPrice: number | null;
+  featured: boolean;
 }
 
 export interface ImageUploadResponse {
@@ -37,8 +39,8 @@ export class ProductService {
     return this.api.get<Product[]>('/admin/products');
   }
 
-  getById(id: number): Observable<Product> {
-    return this.api.get<Product>(`/products/${id}`);
+  getBySlug(slug: string): Observable<Product> {
+    return this.api.get<Product>(`/products/slug/${slug}`);
   }
 
   create(product: ProductRequest): Observable<Product> {
@@ -53,9 +55,23 @@ export class ProductService {
     return this.api.delete<void>(`/products/${id}`);
   }
 
+  reactivate(id: number): Observable<Product> {
+    return this.api.put<Product>(`/products/${id}/reactivate`, null);
+  }
+
   uploadImage(file: File): Observable<ImageUploadResponse> {
     const formData = new FormData();
     formData.append('file', file);
     return this.api.post<ImageUploadResponse>('/products/upload-image', formData);
+  }
+
+  addGalleryImage(productId: number, file: File): Observable<ProductImage[]> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.api.post<ProductImage[]>(`/products/${productId}/images`, formData);
+  }
+
+  deleteGalleryImage(productId: number, imageId: number): Observable<ProductImage[]> {
+    return this.api.delete<ProductImage[]>(`/products/${productId}/images/${imageId}`);
   }
 }

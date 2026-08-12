@@ -11,15 +11,47 @@
 } @else if (error()) {
   <p class="error">{{ error() }}</p>
 } @else if (product(); as product) {
+  <app-breadcrumbs
+    [items]="[
+      { label: 'Início', link: '/' },
+      { label: product.category.name, link: '/produtos', queryParams: { category: product.category.id } },
+      { label: product.name },
+    ]"
+  />
+
   <section class="product-detail">
-    @if (product.imageUrl) {
-      <img [src]="product.imageUrl" [alt]="product.name" />
-    } @else {
-      <div class="product-image-placeholder"></div>
-    }
+    <div class="gallery">
+      @if (galleryImages().length > 0) {
+        <img [src]="galleryImages()[activeImageIndex()]" [alt]="product.name" class="gallery-main" />
+      } @else {
+        <div class="product-image-placeholder gallery-main"></div>
+      }
+
+      @if (galleryImages().length > 1) {
+        <div class="gallery-thumbs">
+          @for (url of galleryImages(); track $index) {
+            <button
+              type="button"
+              class="gallery-thumb"
+              [class.is-active]="$index === activeImageIndex()"
+              [attr.aria-label]="'Ver foto ' + ($index + 1)"
+              (click)="selectImage($index)"
+            >
+              <img [src]="url" alt="" />
+            </button>
+          }
+        </div>
+      }
+    </div>
     <div class="info">
       <h1>{{ product.name }}</h1>
       <p class="category">{{ product.category.name }}</p>
+      @if (product.reviewCount > 0) {
+        <p class="rating-summary">
+          ★ {{ product.averageRating?.toFixed(1) }}
+          <span class="rating-count">({{ product.reviewCount }} avaliações)</span>
+        </p>
+      }
       @if (product.description) {
         <p class="description">{{ product.description }}</p>
       }
@@ -30,6 +62,9 @@
         size="lg"
       />
       <p class="stock">Estoque disponível: {{ product.stock }}</p>
+      @if (isLowStock()) {
+        <p class="low-stock">Últimas {{ product.stock }} unidades!</p>
+      }
 
       <div class="add-to-cart">
         <div class="field quantity-field">
@@ -59,7 +94,79 @@
         >
           Comprar pelo WhatsApp
         </button>
+        <button type="button" class="btn btn--text" (click)="shareProduct()">Compartilhar</button>
       </div>
     </div>
   </section>
+
+  <section class="reviews">
+    <h2>Avaliações</h2>
+
+    @if (reviews().length === 0) {
+      <p class="reviews-empty">Ainda não há avaliações para este produto.</p>
+    } @else {
+      <ul class="reviews-list">
+        @for (review of reviews(); track review.id) {
+          <li class="review-item card">
+            <div class="review-item-header">
+              <span class="review-item-rating">{{ '★'.repeat(review.rating) }}{{ '☆'.repeat(5 - review.rating) }}</span>
+              <span class="review-item-author">{{ review.authorName }}</span>
+              @if (authService.isLoggedIn()) {
+                <button
+                  type="button"
+                  class="btn btn--text review-item-remove"
+                  (click)="deleteReview(review)"
+                >
+                  Remover
+                </button>
+              }
+            </div>
+            @if (review.comment) {
+              <p class="review-item-comment">{{ review.comment }}</p>
+            }
+          </li>
+        }
+      </ul>
+    }
+
+    <form [formGroup]="reviewForm" (ngSubmit)="submitReview()" class="review-form">
+      <h3>Deixe sua avaliação</h3>
+
+      <div class="field">
+        <label class="field-label" for="review-author">Nome</label>
+        <input id="review-author" type="text" formControlName="authorName" />
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="review-rating">Nota</label>
+        <select id="review-rating" formControlName="rating">
+          <option [ngValue]="5">5 - Excelente</option>
+          <option [ngValue]="4">4 - Bom</option>
+          <option [ngValue]="3">3 - Regular</option>
+          <option [ngValue]="2">2 - Ruim</option>
+          <option [ngValue]="1">1 - Péssimo</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="review-comment">Comentário (opcional)</label>
+        <textarea id="review-comment" formControlName="comment"></textarea>
+      </div>
+
+      <button type="submit" class="btn btn--primary" [disabled]="submittingReview()">
+        {{ submittingReview() ? 'Enviando...' : 'Enviar avaliação' }}
+      </button>
+    </form>
+  </section>
+
+  @if (relatedProducts().length > 0) {
+    <section class="related-products">
+      <h2>Produtos relacionados</h2>
+      <app-carousel>
+        @for (related of relatedProducts(); track related.id) {
+          <app-product-card [product]="related" />
+        }
+      </app-carousel>
+    </section>
+  }
 }

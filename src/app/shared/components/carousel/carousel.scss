@@ -1,0 +1,15 @@
+.carousel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+// .product-grid (global) já dá o scroll+snap horizontal — o carousel só
+// acrescenta os botões de navegação nas laterais.
+.carousel-track {
+  flex: 1;
+  min-width: 0;
+}
+
+// .carousel-nav (visual do botão) é global (styles.scss) — reaproveitado
+// também pelo carrossel do hero (home.scss), que não é este componente.

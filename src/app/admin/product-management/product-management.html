@@ -1,9 +1,125 @@
 <section class="product-management">
-  <h1>Produtos</h1>
+  <div class="admin-list-header">
+    <h1>Produtos</h1>
+    <div class="admin-list-header-actions">
+      <button type="button" class="btn btn--secondary" (click)="exportCsv()">Exportar CSV</button>
+      <label class="btn btn--secondary">
+        {{ importingCsv() ? 'Importando...' : 'Importar CSV' }}
+        <input
+          type="file"
+          accept=".csv,text/csv"
+          class="sr-only"
+          #importInput
+          [disabled]="importingCsv()"
+          (change)="importCsv(importInput)"
+        />
+      </label>
+      <button type="button" class="btn btn--primary" (click)="openCreateForm()">Novo produto</button>
+    </div>
+  </div>
 
-  <form [formGroup]="form" (ngSubmit)="submit()" class="product-form card">
-    <h2>{{ editingId() ? 'Editar produto' : 'Novo produto' }}</h2>
+  <div class="filters">
+    <div class="field product-search">
+      <label class="field-label" for="product-search">Buscar</label>
+      <input
+        id="product-search"
+        type="search"
+        placeholder="Nome do produto"
+        [value]="searchTerm()"
+        (input)="onSearchInput($any($event.target).value)"
+      />
+    </div>
 
+    <div class="field">
+      <label class="field-label" for="category-filter">Categoria</label>
+      <select
+        id="category-filter"
+        (change)="onCategoryFilterChange($any($event.target).value)"
+      >
+        <option value="" [selected]="categoryFilter() === null">Todas</option>
+        @for (category of categories(); track category.id) {
+          <option [value]="category.id" [selected]="category.id === categoryFilter()">
+            {{ category.name }}
+          </option>
+        }
+      </select>
+    </div>
+
+    <div class="field">
+      <label class="field-label" for="status-filter">Status</label>
+      <select id="status-filter" (change)="onStatusFilterChange($any($event.target).value)">
+        <option value="all" [selected]="statusFilter() === 'all'">Todos</option>
+        <option value="active" [selected]="statusFilter() === 'active'">Ativos</option>
+        <option value="inactive" [selected]="statusFilter() === 'inactive'">Inativos</option>
+      </select>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <ul class="admin-list">
+      @for (_ of skeletonItems; track $index) {
+        <li class="admin-row card">
+          <app-skeleton height="1rem" width="70%" />
+          <app-skeleton height="1rem" width="40%" />
+        </li>
+      }
+    </ul>
+  } @else if (products().length === 0) {
+    <app-empty-state title="Nenhum produto cadastrado" />
+  } @else if (filteredProducts().length === 0) {
+    <app-empty-state
+      title="Nenhum produto encontrado"
+      description="Tente ajustar a busca ou os filtros."
+    />
+  } @else {
+    <ul class="admin-list">
+      @for (product of filteredProducts(); track product.id) {
+        <li class="admin-row card">
+          <span class="admin-row-title">{{ product.name }}</span>
+          <div class="admin-row-meta">
+            <span>{{ product.category.name }}</span>
+            <span>{{ product.price | currency: 'BRL' }}</span>
+            <span>Estoque: {{ product.stock }}</span>
+            <app-badge [tone]="product.active ? 'success' : 'neutral'">
+              {{ product.active ? 'Ativo' : 'Inativo' }}
+            </app-badge>
+            @if (product.onSale) {
+              <app-badge tone="accent">Promoção</app-badge>
+            }
+            @if (product.featured) {
+              <app-badge tone="accent">Destaque</app-badge>
+            }
+          </div>
+          <div class="admin-row-actions">
+            <button type="button" class="btn btn--secondary btn--sm" (click)="startEdit(product)">
+              Editar
+            </button>
+            @if (product.active) {
+              <button
+                type="button"
+                class="btn btn--danger btn--sm"
+                (click)="requestDeactivate(product)"
+              >
+                Desativar
+              </button>
+            } @else {
+              <button type="button" class="btn btn--secondary btn--sm" (click)="reactivate(product)">
+                Reativar
+              </button>
+            }
+          </div>
+        </li>
+      }
+    </ul>
+  }
+</section>
+
+<app-modal
+  [open]="formModalOpen()"
+  [titleText]="editingId() ? 'Editar produto' : 'Novo produto'"
+  (closed)="closeForm()"
+>
+  <form [formGroup]="form" (ngSubmit)="submit()" class="product-form">
     <div class="field">
       <label class="field-label" for="name">Nome</label>
       <input id="name" type="text" formControlName="name" />
@@ -47,6 +163,14 @@
       </div>
     }
 
+    <div class="field field--checkbox">
+      <label class="field-checkbox-label">
+        <input type="checkbox" formControlName="featured" />
+        Produto em destaque
+      </label>
+      <span class="field-hint">Aparece na seção "Destaques" da home.</span>
+    </div>
+
     <div class="field">
       <label class="field-label" for="categoryId">Categoria</label>
       <select id="categoryId" formControlName="categoryId">
@@ -58,7 +182,7 @@
     </div>
 
     <div class="field">
-      <label class="field-label" for="image">Imagem</label>
+      <label class="field-label" for="image">Imagem de capa</label>
       <input id="image" type="file" accept="image/*" #imageInput (change)="onImageSelected(imageInput)" />
       @if (uploadingImage()) {
         <span class="field-hint">Enviando imagem...</span>
@@ -68,60 +192,48 @@
       }
     </div>
 
-    <div class="actions">
-      @if (editingId()) {
-        <button type="button" class="btn btn--secondary" (click)="cancelEdit()">Cancelar</button>
-      }
+    @if (editingId()) {
+      <div class="field">
+        <label class="field-label" for="gallery-image">Fotos extras (galeria)</label>
+        <input
+          id="gallery-image"
+          type="file"
+          accept="image/*"
+          #galleryImageInput
+          (change)="onGalleryImageSelected(galleryImageInput)"
+        />
+        @if (uploadingGalleryImage()) {
+          <span class="field-hint">Enviando imagem...</span>
+        }
+
+        @if (galleryImages().length > 0) {
+          <div class="gallery-preview">
+            @for (image of galleryImages(); track image.id) {
+              <div class="gallery-preview-item">
+                <img [src]="image.imageUrl" alt="Prévia da galeria" />
+                <button
+                  type="button"
+                  class="gallery-preview-remove"
+                  aria-label="Remover imagem"
+                  (click)="removeGalleryImage(image)"
+                >
+                  &times;
+                </button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    <div class="modal-actions">
+      <button type="button" class="btn btn--secondary" (click)="closeForm()">Cancelar</button>
       <button type="submit" class="btn btn--primary" [disabled]="saving() || uploadingImage()">
         {{ saving() ? 'Salvando...' : editingId() ? 'Salvar alterações' : 'Criar produto' }}
       </button>
     </div>
   </form>
-
-  @if (loading()) {
-    <div class="product-rows">
-      @for (_ of skeletonItems; track $index) {
-        <div class="product-row card">
-          <app-skeleton height="1rem" width="70%" />
-          <app-skeleton height="1rem" width="40%" />
-        </div>
-      }
-    </div>
-  } @else if (products().length === 0) {
-    <app-empty-state title="Nenhum produto cadastrado" />
-  } @else {
-    <ul class="product-rows">
-      @for (product of products(); track product.id) {
-        <li class="product-row card">
-          <span class="product-row-name">{{ product.name }}</span>
-          <span class="product-row-category">{{ product.category.name }}</span>
-          <span class="product-row-price">{{ product.price | currency: 'BRL' }}</span>
-          <span class="product-row-stock">Estoque: {{ product.stock }}</span>
-          <app-badge [tone]="product.active ? 'success' : 'neutral'">
-            {{ product.active ? 'Ativo' : 'Inativo' }}
-          </app-badge>
-          @if (product.onSale) {
-            <app-badge tone="accent">Promoção</app-badge>
-          }
-          <div class="product-row-actions">
-            <button type="button" class="btn btn--secondary btn--sm" (click)="startEdit(product)">
-              Editar
-            </button>
-            @if (product.active) {
-              <button
-                type="button"
-                class="btn btn--danger btn--sm"
-                (click)="requestDeactivate(product)"
-              >
-                Desativar
-              </button>
-            }
-          </div>
-        </li>
-      }
-    </ul>
-  }
-</section>
+</app-modal>
 
 <app-modal
   [open]="productPendingDeactivate() !== null"
@@ -131,7 +243,8 @@
   @if (productPendingDeactivate(); as product) {
     <p>Tem certeza que deseja desativar "{{ product.name }}"?</p>
     <p class="modal-hint">
-      O produto deixa de aparecer na vitrine, mas continua no banco de dados.
+      O produto deixa de aparecer na vitrine, mas continua no banco de dados — dá pra reativar
+      depois.
     </p>
     <div class="modal-actions">
       <button type="button" class="btn btn--secondary" (click)="cancelDeactivate()">Cancelar</button>

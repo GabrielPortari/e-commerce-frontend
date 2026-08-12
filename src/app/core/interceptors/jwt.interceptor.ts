@@ -12,6 +12,9 @@ function isAdminRoute(url: string, method: string): boolean {
   if (url.includes('/settings')) {
     return upperMethod === 'PUT';
   }
+  if (url.includes('/reviews')) {
+    return upperMethod === 'DELETE';
+  }
   const isCategoriesOrProducts = url.includes('/categories') || url.includes('/products');
   return isCategoriesOrProducts && WRITE_METHODS.includes(upperMethod);
 }

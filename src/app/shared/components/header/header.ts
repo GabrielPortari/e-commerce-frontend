@@ -6,12 +6,13 @@ import { CategoryService } from '../../../core/services/category.service';
 import { SettingsService } from '../../../core/services/settings.service';
 import { WhatsappCheckoutService } from '../../../core/services/whatsapp-checkout.service';
 import { Category } from '../../../core/models';
+import { ThemeToggle } from '../theme-toggle/theme-toggle';
 
 type DrawerId = 'category' | 'cart' | null;
 
 @Component({
   selector: 'app-header',
-  imports: [RouterLink, CurrencyPipe],
+  imports: [RouterLink, CurrencyPipe, ThemeToggle],
   templateUrl: './header.html',
   styleUrl: './header.scss',
 })

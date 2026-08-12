@@ -1,0 +1,22 @@
+<button
+  type="button"
+  class="icon-btn"
+  [attr.aria-label]="themeService.theme() === 'dark' ? 'Ativar tema claro' : 'Ativar tema escuro'"
+  (click)="themeService.toggle()"
+>
+  @if (themeService.theme() === 'dark') {
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M12 4.5a1 1 0 0 1-1-1V2a1 1 0 1 1 2 0v1.5a1 1 0 0 1-1 1Zm0 15a1 1 0 0 1 1 1V22a1 1 0 1 1-2 0v-1.5a1 1 0 0 1 1-1ZM4.5 12a1 1 0 0 1-1 1H2a1 1 0 1 1 0-2h1.5a1 1 0 0 1 1 1Zm18 0a1 1 0 0 1-1 1h-1.5a1 1 0 1 1 0-2H21a1 1 0 0 1 1 1ZM6.34 6.34a1 1 0 0 1-1.41 0L3.87 5.29a1 1 0 0 1 1.42-1.42l1.05 1.06a1 1 0 0 1 0 1.41Zm12.73 12.73a1 1 0 0 1-1.41 0l-1.06-1.05a1 1 0 0 1 1.42-1.42l1.05 1.06a1 1 0 0 1 0 1.41ZM6.34 17.66a1 1 0 0 1 0 1.41l-1.05 1.06a1 1 0 0 1-1.42-1.42l1.06-1.05a1 1 0 0 1 1.41 0Zm12.73-12.73a1 1 0 0 1 0 1.41l-1.06 1.05a1 1 0 1 1-1.41-1.41l1.05-1.06a1 1 0 0 1 1.42 0ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Z"
+      />
+    </svg>
+  } @else {
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M20.74 14.51a8.5 8.5 0 0 1-11.25-11.25 1 1 0 0 0-1.27-1.3A10.5 10.5 0 1 0 22.04 15.78a1 1 0 0 0-1.3-1.27Z"
+      />
+    </svg>
+  }
+</button>

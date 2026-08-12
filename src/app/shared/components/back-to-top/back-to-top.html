@@ -1,0 +1,12 @@
+<button
+  type="button"
+  class="back-to-top"
+  [class.is-visible]="visible()"
+  [attr.inert]="visible() ? null : ''"
+  aria-label="Voltar ao topo"
+  (click)="scrollToTop()"
+>
+  <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+    <path fill="currentColor" d="M12 5.4a1 1 0 0 1 .7.3l6 6a1 1 0 0 1-1.4 1.42L13 8.83V18a1 1 0 1 1-2 0V8.83l-4.3 4.3a1 1 0 0 1-1.4-1.42l6-6a1 1 0 0 1 .7-.3Z" />
+  </svg>
+</button>

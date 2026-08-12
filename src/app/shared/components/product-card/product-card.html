@@ -1,4 +1,4 @@
-<a class="product-card card" [routerLink]="['/produtos', product().id]">
+<a class="product-card card" [routerLink]="['/produtos', product().slug]">
   <div class="product-card-media">
     @if (product().imageUrl) {
       <img [src]="product().imageUrl" [alt]="product().name" />
@@ -10,9 +10,18 @@
     }
   </div>
   <h3>{{ product().name }}</h3>
+  @if (product().reviewCount > 0) {
+    <p class="product-card-rating">
+      ★ {{ product().averageRating?.toFixed(1) }}
+      <span class="product-card-rating-count">({{ product().reviewCount }})</span>
+    </p>
+  }
   <app-product-price
     [price]="product().price"
     [onSale]="product().onSale"
     [discountPrice]="product().discountPrice"
   />
+  @if (product().active && product().stock > 0 && product().stock <= 5) {
+    <p class="product-card-low-stock">Últimas {{ product().stock }} unidades!</p>
+  }
 </a>

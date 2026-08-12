@@ -2,7 +2,7 @@
   <div class="site-header-bar container">
     <button
       type="button"
-      class="category-toggle"
+      class="icon-btn category-toggle"
       [attr.aria-expanded]="categoryMenuOpen()"
       aria-controls="category-nav"
       [attr.aria-label]="categoryMenuOpen() ? 'Fechar categorias' : 'Abrir categorias'"
@@ -18,112 +18,116 @@
 
     <a class="brand" routerLink="/">E-commerce</a>
 
-    <button
-      type="button"
-      class="cart-toggle"
-      [attr.aria-expanded]="cartMenuOpen()"
-      aria-controls="cart-drawer"
-      [attr.aria-label]="cartMenuOpen() ? 'Fechar carrinho' : 'Abrir carrinho'"
-      (click)="toggleCartMenu()"
-    >
-      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-        <path
-          fill="currentColor"
-          d="M7 4H5v2h2l3.6 7.59-1.35 2.44c-.16.28-.25.61-.25.97 0 1.1.9 2 2 2h12v-2H10.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0 0 23 6H8.42l-.94-2H7ZM11 19.5A2.5 2.5 0 1 0 11 24a2.5 2.5 0 0 0 0-4.5Zm8 0a2.5 2.5 0 1 0 0 4.5 2.5 2.5 0 0 0 0-4.5Z"
-        />
-      </svg>
-      @if (cartService.itemCount() > 0) {
-        <span class="cart-count">{{ cartService.itemCount() }}</span>
-      }
-    </button>
+    <div class="site-header-actions">
+      <app-theme-toggle />
+
+      <button
+        type="button"
+        class="icon-btn cart-toggle"
+        [attr.aria-expanded]="cartMenuOpen()"
+        aria-controls="cart-drawer"
+        [attr.aria-label]="cartMenuOpen() ? 'Fechar carrinho' : 'Abrir carrinho'"
+        (click)="toggleCartMenu()"
+      >
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <path
+            fill="currentColor"
+            d="M7 4H5v2h2l3.6 7.59-1.35 2.44c-.16.28-.25.61-.25.97 0 1.1.9 2 2 2h12v-2H10.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0 0 23 6H8.42l-.94-2H7ZM11 19.5A2.5 2.5 0 1 0 11 24a2.5 2.5 0 0 0 0-4.5Zm8 0a2.5 2.5 0 1 0 0 4.5 2.5 2.5 0 0 0 0-4.5Z"
+          />
+        </svg>
+        @if (cartService.itemCount() > 0) {
+          <span class="cart-count">{{ cartService.itemCount() }}</span>
+        }
+      </button>
+    </div>
   </div>
 </header>
 
-@if (categoryMenuOpen()) {
-  <div class="drawer-backdrop" (click)="closeCategoryMenu()">
-    <nav
-      id="category-nav"
-      class="drawer-panel category-drawer"
-      aria-label="Categorias"
-      (click)="$event.stopPropagation()"
-    >
-      <div class="drawer-header">
-        <h2>Categorias</h2>
-        <button type="button" class="drawer-close" aria-label="Fechar categorias" (click)="closeCategoryMenu()">
-          &times;
-        </button>
-      </div>
-      <ul>
+<div class="drawer-backdrop" [class.is-open]="categoryMenuOpen()" (click)="closeCategoryMenu()">
+  <nav
+    id="category-nav"
+    class="drawer-panel category-drawer"
+    [class.is-open]="categoryMenuOpen()"
+    [attr.inert]="categoryMenuOpen() ? null : ''"
+    aria-label="Categorias"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="drawer-header">
+      <h2>Categorias</h2>
+      <button type="button" class="drawer-close" aria-label="Fechar categorias" (click)="closeCategoryMenu()">
+        &times;
+      </button>
+    </div>
+    <ul>
+      <li>
+        <a routerLink="/produtos" (click)="closeCategoryMenu()">Todos os produtos</a>
+      </li>
+      @for (category of categories(); track category.id) {
         <li>
-          <a routerLink="/produtos" (click)="closeCategoryMenu()">Todos os produtos</a>
+          <a [routerLink]="['/produtos']" [queryParams]="{ category: category.id }" (click)="closeCategoryMenu()">
+            {{ category.name }}
+          </a>
         </li>
-        @for (category of categories(); track category.id) {
+      }
+    </ul>
+  </nav>
+</div>
+
+<div class="drawer-backdrop" [class.is-open]="cartMenuOpen()" (click)="closeCartMenu()">
+  <aside
+    id="cart-drawer"
+    class="drawer-panel cart-drawer"
+    [class.is-open]="cartMenuOpen()"
+    [attr.inert]="cartMenuOpen() ? null : ''"
+    aria-label="Carrinho"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="drawer-header">
+      <h2>Carrinho</h2>
+      <button type="button" class="drawer-close" aria-label="Fechar carrinho" (click)="closeCartMenu()">
+        &times;
+      </button>
+    </div>
+
+    @if (cartService.loading()) {
+      <div class="cart-drawer-empty">
+        <p>Carregando carrinho...</p>
+      </div>
+    } @else if (cartService.error()) {
+      <div class="cart-drawer-empty">
+        <p class="error">{{ cartService.error() }}</p>
+      </div>
+    } @else if (!cartService.cart() || cartService.cart()!.items.length === 0) {
+      <div class="cart-drawer-empty">
+        <p>Seu carrinho está vazio.</p>
+        <a class="btn btn--secondary btn--sm" routerLink="/produtos" (click)="closeCartMenu()">
+          Ver produtos
+        </a>
+      </div>
+    } @else {
+      <ul class="cart-drawer-items">
+        @for (item of cartService.cart()!.items; track item.id) {
           <li>
-            <a [routerLink]="['/produtos']" [queryParams]="{ category: category.id }" (click)="closeCategoryMenu()">
-              {{ category.name }}
-            </a>
+            <span class="cart-drawer-item-name">{{ item.productName }} &times; {{ item.quantity }}</span>
+            <span class="cart-drawer-item-subtotal">{{ item.subtotal | currency: 'BRL' }}</span>
           </li>
         }
       </ul>
-    </nav>
-  </div>
-}
 
-@if (cartMenuOpen()) {
-  <div class="drawer-backdrop" (click)="closeCartMenu()">
-    <aside
-      id="cart-drawer"
-      class="drawer-panel cart-drawer"
-      aria-label="Carrinho"
-      (click)="$event.stopPropagation()"
-    >
-      <div class="drawer-header">
-        <h2>Carrinho</h2>
-        <button type="button" class="drawer-close" aria-label="Fechar carrinho" (click)="closeCartMenu()">
-          &times;
+      <div class="cart-drawer-footer">
+        <p class="cart-drawer-total">Total: {{ cartService.cart()!.total | currency: 'BRL' }}</p>
+        <a class="btn btn--secondary btn--block" routerLink="/carrinho" (click)="closeCartMenu()">
+          Ver carrinho completo
+        </a>
+        <button
+          type="button"
+          class="btn btn--primary btn--block"
+          [disabled]="!settingsService.loaded()"
+          (click)="buyOnWhatsapp()"
+        >
+          Concluir compra pelo WhatsApp
         </button>
       </div>
-
-      @if (cartService.loading()) {
-        <div class="cart-drawer-empty">
-          <p>Carregando carrinho...</p>
-        </div>
-      } @else if (cartService.error()) {
-        <div class="cart-drawer-empty">
-          <p class="error">{{ cartService.error() }}</p>
-        </div>
-      } @else if (!cartService.cart() || cartService.cart()!.items.length === 0) {
-        <div class="cart-drawer-empty">
-          <p>Seu carrinho está vazio.</p>
-          <a class="btn btn--secondary btn--sm" routerLink="/produtos" (click)="closeCartMenu()">
-            Ver produtos
-          </a>
-        </div>
-      } @else {
-        <ul class="cart-drawer-items">
-          @for (item of cartService.cart()!.items; track item.id) {
-            <li>
-              <span class="cart-drawer-item-name">{{ item.productName }} &times; {{ item.quantity }}</span>
-              <span class="cart-drawer-item-subtotal">{{ item.subtotal | currency: 'BRL' }}</span>
-            </li>
-          }
-        </ul>
-
-        <div class="cart-drawer-footer">
-          <p class="cart-drawer-total">Total: {{ cartService.cart()!.total | currency: 'BRL' }}</p>
-          <a class="btn btn--secondary btn--block" routerLink="/carrinho" (click)="closeCartMenu()">
-            Ver carrinho completo
-          </a>
-          <button
-            type="button"
-            class="btn btn--primary btn--block"
-            [disabled]="!settingsService.loaded()"
-            (click)="buyOnWhatsapp()"
-          >
-            Concluir compra pelo WhatsApp
-          </button>
-        </div>
-      }
-    </aside>
-  </div>
-}
+    }
+  </aside>
+</div>

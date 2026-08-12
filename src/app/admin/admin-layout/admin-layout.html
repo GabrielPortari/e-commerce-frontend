@@ -1,0 +1,24 @@
+<div class="admin-shell">
+  <header class="admin-topbar">
+    <div class="admin-topbar-row container">
+      <a class="admin-brand" routerLink="/admin/dashboard">Admin</a>
+
+      <nav class="admin-nav" aria-label="Navegação do admin">
+        <a routerLink="/admin/dashboard" routerLinkActive="is-active">Painel</a>
+        <a routerLink="/admin/produtos" routerLinkActive="is-active">Produtos</a>
+        <a routerLink="/admin/categorias" routerLinkActive="is-active">Categorias</a>
+        <a routerLink="/admin/configuracoes" routerLinkActive="is-active">Configurações</a>
+      </nav>
+
+      <div class="admin-topbar-actions">
+        <app-theme-toggle />
+        <a routerLink="/" class="btn btn--text">Ver loja</a>
+        <button type="button" class="btn btn--secondary btn--sm" (click)="logout()">Sair</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="admin-content container">
+    <router-outlet />
+  </main>
+</div>
