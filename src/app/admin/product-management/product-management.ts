@@ -95,6 +95,8 @@ function parseProductsCsv(text: string): ImportRow[] {
   styleUrl: './product-management.scss',
 })
 export class ProductManagement {
+  protected readonly maxGalleryImages = 3;
+
   private readonly fb = inject(FormBuilder);
   private readonly productService = inject(ProductService);
   private readonly categoryService = inject(CategoryService);
@@ -227,6 +229,12 @@ export class ProductManagement {
     const file = input.files?.[0];
     const productId = this.editingId();
     if (!file || !productId) {
+      return;
+    }
+
+    if (this.galleryImages().length >= this.maxGalleryImages) {
+      this.toastService.error(`Limite de ${this.maxGalleryImages} imagens por produto atingido.`);
+      input.value = '';
       return;
     }
 

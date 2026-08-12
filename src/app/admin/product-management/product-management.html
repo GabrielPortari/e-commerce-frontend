@@ -195,13 +195,17 @@
     @if (editingId()) {
       <div class="field">
         <label class="field-label" for="gallery-image">Fotos extras (galeria)</label>
-        <input
-          id="gallery-image"
-          type="file"
-          accept="image/*"
-          #galleryImageInput
-          (change)="onGalleryImageSelected(galleryImageInput)"
-        />
+        @if (galleryImages().length < maxGalleryImages) {
+          <input
+            id="gallery-image"
+            type="file"
+            accept="image/*"
+            #galleryImageInput
+            (change)="onGalleryImageSelected(galleryImageInput)"
+          />
+        } @else {
+          <span class="field-hint">Limite de {{ maxGalleryImages }} imagens atingido.</span>
+        }
         @if (uploadingGalleryImage()) {
           <span class="field-hint">Enviando imagem...</span>
         }
