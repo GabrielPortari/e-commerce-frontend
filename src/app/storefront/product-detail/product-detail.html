@@ -21,11 +21,7 @@
 
   <section class="product-detail">
     <div class="gallery">
-      @if (galleryImages().length > 0) {
-        <img [src]="galleryImages()[activeImageIndex()]" [alt]="product.name" class="gallery-main" />
-      } @else {
-        <div class="product-image-placeholder gallery-main"></div>
-      }
+      <img [src]="galleryImages()[activeImageIndex()]" [alt]="product.name" class="gallery-main" />
 
       @if (galleryImages().length > 1) {
         <div class="gallery-thumbs">

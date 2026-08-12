@@ -1,10 +1,6 @@
 <a class="product-card card" [routerLink]="['/produtos', product().slug]">
   <div class="product-card-media">
-    @if (product().imageUrl) {
-      <img [src]="product().imageUrl" [alt]="product().name" />
-    } @else {
-      <div class="product-card-placeholder"></div>
-    }
+    <img [src]="product().imageUrl || '/images/default.jpg'" [alt]="product().name" />
     @if (product().onSale) {
       <app-badge class="product-card-tag" tone="accent">Promoção</app-badge>
     }

@@ -23,16 +23,11 @@
 .product-card-media {
   position: relative;
 
-  img,
-  .product-card-placeholder {
+  img {
     width: 100%;
     aspect-ratio: 1 / 1;
     object-fit: cover;
     border-radius: var(--radius-sm);
-  }
-
-  .product-card-placeholder {
-    background: var(--color-border);
   }
 }
 

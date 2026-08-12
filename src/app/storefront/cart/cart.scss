@@ -39,17 +39,12 @@
   align-items: center;
   gap: var(--space-3);
 
-  img,
-  .cart-item-placeholder {
+  img {
     width: 64px;
     height: 64px;
     object-fit: cover;
     border-radius: var(--radius-sm);
     flex-shrink: 0;
-  }
-
-  .cart-item-placeholder {
-    background: var(--color-border);
   }
 }
 

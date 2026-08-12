@@ -67,7 +67,8 @@ export class ProductDetail {
       return [];
     }
     const cover = product.imageUrl ? [product.imageUrl] : [];
-    return [...cover, ...product.images.map((image) => image.imageUrl)];
+    const images = [...cover, ...product.images.map((image) => image.imageUrl)];
+    return images.length > 0 ? images : ['/images/default.jpg'];
   });
 
   constructor() {

@@ -24,11 +24,7 @@
       @for (item of cartService.cart()!.items; track item.id) {
         <li class="cart-item card">
           <div class="cart-item-product">
-            @if (item.productImageUrl) {
-              <img [src]="item.productImageUrl" [alt]="item.productName" />
-            } @else {
-              <div class="cart-item-placeholder"></div>
-            }
+            <img [src]="item.productImageUrl || '/images/default.jpg'" [alt]="item.productName" />
             <div>
               <p class="cart-item-name">{{ item.productName }}</p>
               <p class="cart-item-unit-price">{{ item.unitPrice | currency: 'BRL' }} / un.</p>
