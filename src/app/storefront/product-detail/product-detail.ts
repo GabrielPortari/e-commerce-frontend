@@ -79,6 +79,7 @@ export class ProductDetail {
       this.loading.set(true);
       this.error.set(null);
       this.activeImageIndex.set(0);
+      this.quantity.set(1);
       this.relatedProducts.set([]);
       this.reviews.set([]);
       this.reviewForm.reset({ authorName: '', rating: 5, comment: '' });

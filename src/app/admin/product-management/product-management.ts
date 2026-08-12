@@ -16,15 +16,19 @@ function csvEscape(value: string | number): string {
   return /[";\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
 }
 
-function parseCsvLine(line: string): string[] {
-  const fields: string[] = [];
+// Parseia o CSV inteiro de uma vez (não linha a linha) porque campos entre
+// aspas podem conter quebras de linha literais (ex.: descrição multi-linha
+// exportada) — dividir por linha antes de rastrear aspas corrompe esses campos.
+function parseCsvRows(text: string): string[][] {
+  const rows: string[][] = [];
+  let row: string[] = [];
   let current = '';
   let inQuotes = false;
 
-  for (let i = 0; i < line.length; i++) {
-    const char = line[i];
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
     if (inQuotes) {
-      if (char === '"' && line[i + 1] === '"') {
+      if (char === '"' && text[i + 1] === '"') {
         current += '"';
         i++;
       } else if (char === '"') {
@@ -35,17 +39,30 @@ function parseCsvLine(line: string): string[] {
     } else if (char === '"') {
       inQuotes = true;
     } else if (char === ';') {
-      fields.push(current);
+      row.push(current);
       current = '';
+    } else if (char === '\r') {
+      // ignora — o \n seguinte fecha a linha
+    } else if (char === '\n') {
+      row.push(current);
+      current = '';
+      if (row.some((field) => field.trim().length > 0)) {
+        rows.push(row);
+      }
+      row = [];
     } else {
       current += char;
     }
   }
-  fields.push(current);
-  return fields;
+  row.push(current);
+  if (row.some((field) => field.trim().length > 0)) {
+    rows.push(row);
+  }
+  return rows;
 }
 
 interface ImportRow {
+  id: number | null;
   name: string;
   description: string;
   price: number;
@@ -57,29 +74,18 @@ interface ImportRow {
 }
 
 function parseProductsCsv(text: string): ImportRow[] {
-  const lines = text
-    .split(/\r\n|\n/)
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0);
-  if (lines.length === 0) {
-    return [];
-  }
-
-  const [, ...dataLines] = lines;
-  return dataLines.map((line) => {
-    const [, name, description, price, stock, categoryName, , onSale, discountPrice, featured] =
-      parseCsvLine(line);
-    return {
-      name: (name ?? '').trim(),
-      description: (description ?? '').trim(),
-      price: Number((price ?? '0').replace(',', '.')),
-      stock: Number(stock ?? '0'),
-      categoryName: (categoryName ?? '').trim(),
-      onSale: (onSale ?? '').trim().toLowerCase() === 'sim',
-      discountPrice: discountPrice?.trim() ? Number(discountPrice.replace(',', '.')) : null,
-      featured: (featured ?? '').trim().toLowerCase() === 'sim',
-    };
-  });
+  const [, ...dataRows] = parseCsvRows(text);
+  return dataRows.map(([id, name, description, price, stock, categoryName, , onSale, discountPrice, featured]) => ({
+    id: id?.trim() ? Number(id) : null,
+    name: (name ?? '').trim(),
+    description: (description ?? '').trim(),
+    price: Number((price ?? '0').replace(',', '.')),
+    stock: Number(stock ?? '0'),
+    categoryName: (categoryName ?? '').trim(),
+    onSale: (onSale ?? '').trim().toLowerCase() === 'sim',
+    discountPrice: discountPrice?.trim() ? Number(discountPrice.replace(',', '.')) : null,
+    featured: (featured ?? '').trim().toLowerCase() === 'sim',
+  }));
 }
 
 @Component({
@@ -213,6 +219,8 @@ export class ProductManagement {
   protected closeForm(): void {
     this.formModalOpen.set(false);
     this.editingId.set(null);
+    this.galleryImages.set([]);
+    this.uploadingGalleryImage.set(false);
   }
 
   protected onGalleryImageSelected(input: HTMLInputElement): void {
@@ -225,13 +233,17 @@ export class ProductManagement {
     this.uploadingGalleryImage.set(true);
     this.productService.addGalleryImage(productId, file).subscribe({
       next: (images) => {
-        this.galleryImages.set(images);
-        this.uploadingGalleryImage.set(false);
+        if (this.editingId() === productId) {
+          this.galleryImages.set(images);
+          this.uploadingGalleryImage.set(false);
+        }
         input.value = '';
       },
       error: () => {
         this.toastService.error('Falha ao enviar a imagem.');
-        this.uploadingGalleryImage.set(false);
+        if (this.editingId() === productId) {
+          this.uploadingGalleryImage.set(false);
+        }
       },
     });
   }
@@ -243,7 +255,11 @@ export class ProductManagement {
     }
 
     this.productService.deleteGalleryImage(productId, image.id).subscribe({
-      next: (images) => this.galleryImages.set(images),
+      next: (images) => {
+        if (this.editingId() === productId) {
+          this.galleryImages.set(images);
+        }
+      },
       error: () => this.toastService.error('Falha ao remover a imagem.'),
     });
   }
@@ -389,6 +405,14 @@ export class ProductManagement {
         errors.push(`"${row.name}": preço inválido`);
         continue;
       }
+      if (row.onSale && !(row.discountPrice !== null && row.discountPrice > 0 && row.discountPrice < row.price)) {
+        errors.push(`"${row.name}": preço promocional inválido`);
+        continue;
+      }
+
+      const existing =
+        (row.id !== null && existingProducts.find((p) => p.id === row.id)) ||
+        existingProducts.find((p) => p.name.toLowerCase() === row.name.toLowerCase());
 
       const request = {
         name: row.name,
@@ -396,13 +420,11 @@ export class ProductManagement {
         price: row.price,
         stock: row.stock,
         categoryId: category.id,
-        imageUrl: null,
+        imageUrl: existing?.imageUrl ?? null,
         onSale: row.onSale,
         discountPrice: row.onSale ? row.discountPrice : null,
         featured: row.featured,
       };
-
-      const existing = existingProducts.find((p) => p.name.toLowerCase() === row.name.toLowerCase());
 
       try {
         if (existing) {

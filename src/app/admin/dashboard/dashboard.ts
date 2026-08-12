@@ -2,6 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ProductService } from '../../core/services/product.service';
 import { CategoryService } from '../../core/services/category.service';
+import { ToastService } from '../../core/services/toast.service';
 import { Category, Product } from '../../core/models';
 import { Skeleton } from '../../shared/components/skeleton/skeleton';
 
@@ -14,6 +15,7 @@ import { Skeleton } from '../../shared/components/skeleton/skeleton';
 export class Dashboard {
   private readonly productService = inject(ProductService);
   private readonly categoryService = inject(CategoryService);
+  private readonly toastService = inject(ToastService);
 
   protected readonly loading = signal(true);
   protected readonly products = signal<Product[]>([]);
@@ -40,6 +42,9 @@ export class Dashboard {
       },
       error: () => this.loading.set(false),
     });
-    this.categoryService.getAll().subscribe({ next: (categories) => this.categories.set(categories) });
+    this.categoryService.getAll().subscribe({
+      next: (categories) => this.categories.set(categories),
+      error: () => this.toastService.error('Não foi possível carregar as categorias.'),
+    });
   }
 }
