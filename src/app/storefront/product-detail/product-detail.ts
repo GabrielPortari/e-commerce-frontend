@@ -9,7 +9,7 @@ import { ToastService } from '../../core/services/toast.service';
 import { SettingsService } from '../../core/services/settings.service';
 import { ReviewService } from '../../core/services/review.service';
 import { AuthService } from '../../core/services/auth.service';
-import { Product, Review } from '../../core/models';
+import { ApiError, Product, Review } from '../../core/models';
 import { Skeleton } from '../../shared/components/skeleton/skeleton';
 import { ProductPrice } from '../../shared/components/product-price/product-price';
 import { ProductCard } from '../../shared/components/product-card/product-card';
@@ -139,9 +139,9 @@ export class ProductDetail {
         this.submittingReview.set(false);
         this.toastService.success('Avaliação enviada. Obrigado!');
       },
-      error: () => {
+      error: (err: { error?: ApiError }) => {
         this.submittingReview.set(false);
-        this.toastService.error('Não foi possível enviar a avaliação.');
+        this.toastService.error(err.error?.message ?? 'Não foi possível enviar a avaliação.');
       },
     });
   }
@@ -154,8 +154,8 @@ export class ProductDetail {
   }
 
   private loadReviews(productId: number): void {
-    this.reviewService.getByProduct(productId).subscribe({
-      next: (reviews) => this.reviews.set(reviews),
+    this.reviewService.getByProduct(productId, { size: 50 }).subscribe({
+      next: (page) => this.reviews.set(page.content),
     });
   }
 
