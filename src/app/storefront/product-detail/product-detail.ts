@@ -9,7 +9,7 @@ import { ToastService } from '../../core/services/toast.service';
 import { SettingsService } from '../../core/services/settings.service';
 import { ReviewService } from '../../core/services/review.service';
 import { AuthService } from '../../core/services/auth.service';
-import { Product, Review } from '../../core/models';
+import { ApiError, Product, Review } from '../../core/models';
 import { Skeleton } from '../../shared/components/skeleton/skeleton';
 import { ProductPrice } from '../../shared/components/product-price/product-price';
 import { ProductCard } from '../../shared/components/product-card/product-card';
@@ -19,6 +19,7 @@ import { formatCurrencyBRL } from '../../core/utils/currency';
 
 const LOW_STOCK_THRESHOLD = 5;
 const RELATED_PRODUCTS_LIMIT = 8;
+const REVIEWS_PAGE_SIZE = 50;
 
 @Component({
   selector: 'app-product-detail',
@@ -45,7 +46,12 @@ export class ProductDetail {
   protected readonly activeImageIndex = signal(0);
   protected readonly relatedProducts = signal<Product[]>([]);
   protected readonly reviews = signal<Review[]>([]);
+  protected readonly reviewsPage = signal(0);
+  protected readonly reviewsTotalPages = signal(0);
+  protected readonly loadingMoreReviews = signal(false);
   protected readonly submittingReview = signal(false);
+
+  protected readonly hasMoreReviews = computed(() => this.reviewsPage() + 1 < this.reviewsTotalPages());
 
   protected readonly reviewForm = this.fb.nonNullable.group({
     authorName: ['', Validators.required],
@@ -83,6 +89,8 @@ export class ProductDetail {
       this.quantity.set(1);
       this.relatedProducts.set([]);
       this.reviews.set([]);
+      this.reviewsPage.set(0);
+      this.reviewsTotalPages.set(0);
       this.reviewForm.reset({ authorName: '', rating: 5, comment: '' });
 
       this.productService.getBySlug(slug).subscribe({
@@ -139,9 +147,9 @@ export class ProductDetail {
         this.submittingReview.set(false);
         this.toastService.success('Avaliação enviada. Obrigado!');
       },
-      error: () => {
+      error: (err: { error?: ApiError }) => {
         this.submittingReview.set(false);
-        this.toastService.error('Não foi possível enviar a avaliação.');
+        this.toastService.error(err.error?.message ?? 'Não foi possível enviar a avaliação.');
       },
     });
   }
@@ -153,9 +161,37 @@ export class ProductDetail {
     });
   }
 
+  protected loadMoreReviews(): void {
+    const product = this.product();
+    if (!product || this.loadingMoreReviews() || !this.hasMoreReviews()) {
+      return;
+    }
+
+    this.loadingMoreReviews.set(true);
+    const nextPage = this.reviewsPage() + 1;
+    this.reviewService.getByProduct(product.id, { page: nextPage, size: REVIEWS_PAGE_SIZE }).subscribe({
+      next: (page) => {
+        this.reviews.update((reviews) => [...reviews, ...page.content]);
+        this.reviewsPage.set(page.page);
+        this.reviewsTotalPages.set(page.totalPages);
+        this.loadingMoreReviews.set(false);
+      },
+      error: () => {
+        this.loadingMoreReviews.set(false);
+        this.toastService.error('Não foi possível carregar mais avaliações.');
+      },
+    });
+  }
+
   private loadReviews(productId: number): void {
-    this.reviewService.getByProduct(productId).subscribe({
-      next: (reviews) => this.reviews.set(reviews),
+    this.reviewsPage.set(0);
+    this.reviewsTotalPages.set(0);
+    this.reviewService.getByProduct(productId, { size: REVIEWS_PAGE_SIZE }).subscribe({
+      next: (page) => {
+        this.reviews.set(page.content);
+        this.reviewsPage.set(page.page);
+        this.reviewsTotalPages.set(page.totalPages);
+      },
     });
   }
 

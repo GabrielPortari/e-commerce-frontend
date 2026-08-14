@@ -123,6 +123,17 @@
           </li>
         }
       </ul>
+
+      @if (hasMoreReviews()) {
+        <button
+          type="button"
+          class="btn btn--secondary"
+          [disabled]="loadingMoreReviews()"
+          (click)="loadMoreReviews()"
+        >
+          {{ loadingMoreReviews() ? 'Carregando...' : 'Carregar mais avaliações' }}
+        </button>
+      }
     }
 
     <form [formGroup]="reviewForm" (ngSubmit)="submitReview()" class="review-form">

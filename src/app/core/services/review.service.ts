@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
-import { Review } from '../models';
+import { Review, ReviewPage } from '../models';
 
 export interface ReviewRequest {
   authorName: string;
@@ -13,8 +13,11 @@ export interface ReviewRequest {
 export class ReviewService {
   private readonly api = inject(ApiService);
 
-  getByProduct(productId: number): Observable<Review[]> {
-    return this.api.get<Review[]>(`/products/${productId}/reviews`);
+  getByProduct(
+    productId: number,
+    params?: { page?: number; size?: number; sort?: 'recent' | 'highest' | 'lowest' }
+  ): Observable<ReviewPage> {
+    return this.api.get<ReviewPage>(`/products/${productId}/reviews`, params);
   }
 
   create(productId: number, request: ReviewRequest): Observable<Review> {
